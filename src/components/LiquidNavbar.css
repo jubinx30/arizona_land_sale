@@ -1,0 +1,303 @@
+/* Liquid Glass Navbar - Completely Transparent Liquid Glass Bar with 100px Border Radius */
+.liquid-navbar {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%; /* 20% width reduction */
+  max-width: 328px;
+  height: 58px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 100px; /* Kept as 100px pill bar */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.03) 42%,
+    rgba(255, 255, 255, 0.02) 60%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(106%);
+  backdrop-filter: blur(16px) saturate(180%) contrast(106%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 16px 36px rgba(12, 28, 38, 0.16),
+    0 4px 12px rgba(12, 28, 38, 0.06),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.35),
+    inset 2px 0 4px rgba(255, 255, 255, 0.45),
+    inset -2px 0 4px rgba(255, 255, 255, 0.45),
+    inset 0 0 14px rgba(255, 255, 255, 0.1);
+  z-index: 35;
+  isolation: isolate;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* Volumetric liquid light refractions and curved round cap lens meniscus */
+.liquid-navbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 100px;
+  background:
+    /* Top-left specular soft glow bloom */
+    radial-gradient(circle at 26% 0%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.2) 28%, transparent 55%),
+    /* Bottom edge soft refraction gleam */
+    radial-gradient(circle at 55% 100%, rgba(210, 245, 255, 0.3) 0%, transparent 45%),
+    /* Left rounded cap refraction meniscus */
+    radial-gradient(ellipse 32px 50px at 0% 50%, rgba(255, 255, 255, 0.42) 0%, transparent 70%),
+    /* Right rounded cap refraction meniscus */
+    radial-gradient(ellipse 32px 50px at 100% 50%, rgba(255, 255, 255, 0.38) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Bottom specular refraction highlight line */
+.liquid-navbar::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 28%;
+  right: 28%;
+  height: 1.5px;
+  border-radius: 100px;
+  background: linear-gradient(90deg, transparent 0%, rgba(210, 245, 255, 0.75) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Top specular reflection glare rim */
+.liquid-glass-glare {
+  position: absolute;
+  top: 1px;
+  left: 18px;
+  right: 18px;
+  height: 1.5px;
+  border-radius: 100px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 10%,
+    rgba(255, 255, 255, 0.95) 24%,
+    rgba(255, 255, 255, 0.85) 32%,
+    rgba(255, 255, 255, 0.3) 75%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Distinct bright specular flare spot (as seen on reference image top edge) */
+.liquid-glass-glare::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24%;
+  width: 44px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.75) 35%,
+    rgba(255, 255, 255, 0) 72%
+  );
+  filter: blur(0.8px);
+  box-shadow: 0 1px 8px rgba(255, 255, 255, 0.95);
+}
+
+/* Tab Track Container */
+.liquid-navbar__track {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Individual Tab Item */
+.liquid-tab-item {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border-radius: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #2b3d4a;
+  padding: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.22s ease, transform 0.15s ease;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+
+.liquid-tab-item:active {
+  transform: scale(0.95);
+}
+
+/* Active State */
+.liquid-tab-item.is-active {
+  color: var(--green-dark, #0f5e3e);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+/* Sliding Liquid Glass Indicator Pill (Inside Navbar) */
+.liquid-active-indicator {
+  position: absolute;
+  inset: 3px 2px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%);
+  border: 1px solid rgba(207, 207, 207, 0.75);
+  box-shadow:
+    0 2px 8px rgba(15, 94, 62, 0.12),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px rgba(15, 94, 62, 0.08);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Icon Wrap: stays completely inside the tab, smooth color transition */
+.liquid-tab-item__icon-wrap {
+  position: relative;
+  width: 32px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.6));
+}
+
+/* Text Label */
+.liquid-tab-item__label {
+  font-size: 8.5px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+}
+
+.liquid-tab-item.is-active .liquid-tab-item__label {
+  font-weight: 700;
+  color: inherit;
+}
+
+/* Saved Count Badge */
+.liquid-tab-item__badge {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 100px;
+  background: #d65b50;
+  color: white;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 5px rgba(214, 91, 80, 0.35);
+}
+
+/* Dark Mode Support - completely transparent liquid glass in dark theme */
+.dark-mode .liquid-navbar {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(25, 38, 48, 0.35) 45%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.5),
+    0 4px 14px rgba(0, 0, 0, 0.3),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.65),
+    inset 0 -1.5px 2px rgba(255, 255, 255, 0.2),
+    inset 1.5px 0 3px rgba(255, 255, 255, 0.3),
+    inset -1.5px 0 3px rgba(255, 255, 255, 0.3),
+    inset 0 0 16px rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .liquid-navbar::before {
+  background:
+    radial-gradient(circle at 26% 0%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.12) 25%, transparent 50%),
+    radial-gradient(circle at 55% 100%, rgba(140, 215, 185, 0.2) 0%, transparent 45%),
+    radial-gradient(ellipse 32px 50px at 0% 50%, rgba(255, 255, 255, 0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 32px 50px at 100% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+}
+
+.dark-mode .liquid-navbar::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(140, 215, 185, 0.4) 50%, transparent 100%);
+}
+
+.dark-mode .liquid-glass-glare {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 10%,
+    rgba(255, 255, 255, 0.8) 24%,
+    rgba(255, 255, 255, 0.65) 32%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 100%
+  );
+}
+
+.dark-mode .liquid-glass-glare::after {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.5) 35%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.45);
+}
+
+.dark-mode .liquid-tab-item {
+  color: #c0ced6;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.dark-mode .liquid-tab-item__icon-wrap {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+.dark-mode .liquid-tab-item.is-active,
+.dark-mode .liquid-tab-item.is-active .liquid-tab-item__label {
+  color: #9fe2bd;
+  text-shadow: 0 0 12px rgba(159, 226, 189, 0.45);
+}
+
+.dark-mode .liquid-active-indicator {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .liquid-tab-item__badge {
+  border-color: #1d282f;
+}
+
+/* Mobile viewport adjustments */
+@media (max-width: 600px) {
+  .liquid-navbar {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    width: 80%;
+  }
+}
