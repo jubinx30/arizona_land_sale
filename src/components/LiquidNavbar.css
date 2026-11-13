@@ -295,7 +295,7 @@
 }
 
 /* Mobile viewport adjustments */
-@media (max-width: 600px) {
+@media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
   .liquid-navbar {
     bottom: calc(12px + env(safe-area-inset-bottom));
     width: 80%;
