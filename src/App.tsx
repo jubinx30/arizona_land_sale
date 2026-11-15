@@ -101,7 +101,11 @@ function App() {
     window.setTimeout(() => setToast(''), 2600)
   }, [])
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }) }, [location.pathname])
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    const mainEl = document.querySelector('.screen-main')
+    if (mainEl) mainEl.scrollTop = 0
+  }, [location.pathname])
 
   useEffect(() => {
     if (darkMode) {
@@ -491,7 +495,21 @@ function MapCanvas({ listings, onSelect, center = [31.92, -110.1], zoom = 8, sho
     <MapResizer /><MapViewport center={center} zoom={zoom} /><MapBoundsReporter onBoundsChange={onBoundsChange} />
   </MapContainer>
 }
-function MapResizer() { const map = useMap(); useEffect(() => { const timer = window.setTimeout(() => map.invalidateSize(), 100); return () => window.clearTimeout(timer) }, [map]); return null }
+function MapResizer() {
+  const map = useMap()
+  useEffect(() => {
+    const handleResize = () => {
+      map.invalidateSize()
+    }
+    window.addEventListener('resize', handleResize)
+    const timer = window.setTimeout(handleResize, 150)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.clearTimeout(timer)
+    }
+  }, [map])
+  return null
+}
 function MapViewport({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap()
   useEffect(() => { map.setView(center, zoom) }, [center, map, zoom])

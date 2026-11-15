@@ -587,3 +587,18 @@
   border-color: #2d3d49;
 }
 
+/* Mobile viewport adjustments */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+  .auth-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    padding: 12px;
+  }
+  .auth-modal-card {
+    max-width: min(100%, 360px);
+    max-height: calc(100dvh - 24px);
+  }
+}
+
+

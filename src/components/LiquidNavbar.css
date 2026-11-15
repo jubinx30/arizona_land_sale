@@ -297,7 +297,13 @@
 /* Mobile viewport adjustments */
 @media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
   .liquid-navbar {
+    position: fixed;
     bottom: calc(12px + env(safe-area-inset-bottom));
-    width: 80%;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: min(calc(100% - 24px), 360px);
+    z-index: 60;
   }
 }
