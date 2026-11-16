@@ -13,6 +13,7 @@ import 'leaflet/dist/leaflet.css'
 import { categories, cities, properties } from './data/properties'
 import type { Property } from './data/properties'
 import PropertyCard, { formatPrice } from './components/PropertyCard'
+import SlidableScroller from './components/SlidableScroller'
 import LiquidNavbar from './components/LiquidNavbar'
 import AuthModal from './components/AuthModal'
 import { getFilteredProperties, initialFilters, useAppStore } from './store/useAppStore'
@@ -268,7 +269,11 @@ function App() {
 function HeroCarousel() {
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState(1)
-  const touchStartX = useRef(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isDownRef = useRef(false)
+  const startXRef = useRef(0)
+  const dragDiffRef = useRef(0)
+  const isDraggingRef = useRef(false)
   const total = heroSlides.length
 
   const goTo = useCallback((next: number, dir?: number) => {
@@ -277,18 +282,72 @@ function HeroCarousel() {
   }, [index, total])
 
   useEffect(() => {
-    const timer = setInterval(() => goTo((index + 1) % total, 1), 4500)
+    const timer = setInterval(() => {
+      if (!isDownRef.current) {
+        goTo((index + 1) % total, 1)
+      }
+    }, 4500)
     return () => clearInterval(timer)
   }, [index, goTo, total])
 
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Primary button or touch
+    if (e.button !== 0) return
+    isDownRef.current = true
+    startXRef.current = e.clientX
+    dragDiffRef.current = 0
+    isDraggingRef.current = false
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!isDownRef.current) return
+      const diff = startXRef.current - moveEvent.clientX
+      dragDiffRef.current = diff
+      if (Math.abs(diff) > 5) {
+        isDraggingRef.current = true
+        containerRef.current?.classList.add('is-pointer-dragging')
+      }
+    }
+
+    const handlePointerUp = () => {
+      if (!isDownRef.current) return
+      isDownRef.current = false
+      containerRef.current?.classList.remove('is-pointer-dragging')
+
+      const diff = dragDiffRef.current
+      if (Math.abs(diff) > 35) {
+        goTo(diff > 0 ? index + 1 : index - 1, diff > 0 ? 1 : -1)
+      }
+
+      if (isDraggingRef.current) {
+        const preventClick = (clickEvent: MouseEvent) => {
+          clickEvent.preventDefault()
+          clickEvent.stopPropagation()
+          clickEvent.stopImmediatePropagation()
+        }
+        window.addEventListener('click', preventClick, { capture: true, once: true })
+        window.setTimeout(() => {
+          window.removeEventListener('click', preventClick, { capture: true })
+          isDraggingRef.current = false
+        }, 50)
+      }
+
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
+  }
+
   return (
     <div
+      ref={containerRef}
       className="hero-carousel"
-      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
-      onTouchEnd={(e) => {
-        const diff = touchStartX.current - e.changedTouches[0].clientX
-        if (Math.abs(diff) > 42) goTo(diff > 0 ? index + 1 : index - 1, diff > 0 ? 1 : -1)
-      }}
+      onPointerDown={handlePointerDown}
+      role="region"
+      aria-label="Hero carousel"
     >
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -313,7 +372,7 @@ function HeroCarousel() {
           <button
             key={i}
             className={`hero-dot ${i === index ? 'active' : ''}`}
-            onClick={() => goTo(i)}
+            onClick={(e) => { e.stopPropagation(); goTo(i) }}
             aria-label={`Slide ${i + 1}: ${heroSlides[i].label}`}
           />
         ))}
@@ -337,7 +396,14 @@ function Home() {
 
     <section className="section-block featured-section">
       <SectionHeading kicker="Serving Southern  Arizona Counties" title="Featured Properties" action="View all" onAction={() => navigate('/search')} />
-      <div className="featured-scroller">{properties.slice(0, 5).map((property) => <PropertyCard key={property.id} property={property} compact />)}<button className="see-all-card" onClick={() => navigate('/search')}><span><ArrowRight /></span><strong>See all<br />properties</strong><small>12 places to explore</small></button></div>
+      <SlidableScroller>
+        {properties.slice(0, 5).map((property) => <PropertyCard key={property.id} property={property} compact />)}
+        <button className="see-all-card" onClick={() => navigate('/search')}>
+          <span><ArrowRight /></span>
+          <strong>See all<br />properties</strong>
+          <small>12 places to explore</small>
+        </button>
+      </SlidableScroller>
     </section>
    
     <section className="partner-section"><span className="welcome-kicker">GOOD COMPANY, GREAT PLACES</span><h3>Our trusted partners</h3><div className="partner-marquee"><div className="partner-track">{['MINERAL MARKETING', 'LAND id', 'JOHN DEERE', 'GLOBAL AUCTION GUIDE', 'ReScore', 'UC HUNTING PROPERTIES', 'MINERAL MARKETING', 'LAND id', 'JOHN DEERE'].map((partner, index) => <span key={`${partner}-${index}`}>{partner}</span>)}</div></div></section>
@@ -658,7 +724,12 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
       <div className="detail-map" onClick={() => navigate('/map')}><MapCanvas listings={[property]} /><div className="map-label"><MapPin size={15} /> {property.city}, Arizona <ArrowRight size={14} /></div></div>
       <div className="calculator-card"><button className="calculator-title" onClick={() => setShowCalc((value) => !value)}><span><span className="calculator-icon"><DollarSign size={17} /></span><span><b>Estimated monthly payment</b><small>A simple starting point</small></span></span><ChevronDown className={showCalc ? 'rotate-icon' : ''} size={19} /></button><div className="payment-amount">{formatPrice(Math.round(monthly))}<small>/mo</small></div>{showCalc && <div className="calculator-controls"><label>Down payment <select value={down} onChange={(event) => setDown(event.target.value)}><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="50">50%</option></select></label><label>Interest rate <input type="number" value={rate} min="0" step="0.1" onChange={(event) => setRate(event.target.value)} /></label><label>Loan term <select value={term} onChange={(event) => setTerm(event.target.value)}><option value="15">15 years</option><option value="20">20 years</option><option value="30">30 years</option></select></label><small>Estimate excludes taxes, insurance, and fees.</small></div>}</div>
       {/* <div className="broker-card"><div className="broker-avatar">RF</div><div><span className="welcome-kicker">YOUR LOCAL GUIDE</span><strong>Richard “Rick” Frank</strong><small>Arizona Life Homes and Land</small></div><button onClick={() => onNotify('Calling Rick Frank…')} aria-label="Call Rick"><Phone size={17} /></button></div> */}
-      <div className="similar-section"><SectionHeading kicker="KEEP EXPLORING" title="Similar places" /><div className="featured-scroller">{properties.filter((item) => item.id !== property.id).slice(0, 3).map((item) => <PropertyCard key={item.id} property={item} compact />)}</div></div>
+      <div className="similar-section">
+        <SectionHeading kicker="KEEP EXPLORING" title="Similar places" />
+        <SlidableScroller ariaLabel="Similar places slider">
+          {properties.filter((item) => item.id !== property.id).slice(0, 3).map((item) => <PropertyCard key={item.id} property={item} compact />)}
+        </SlidableScroller>
+      </div>
     </div>
     <AnimatePresence>{showGallery && <motion.div className="gallery-viewer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowGallery(false)}><button className="viewer-close"><X /></button><button className="viewer-arrow left" onClick={(event) => { event.stopPropagation(); galleryMove(-1) }}><ChevronLeft /></button><img src={property.images[imageIndex]} alt={property.title} /><button className="viewer-arrow right" onClick={(event) => { event.stopPropagation(); galleryMove(1) }}><ChevronRight /></button><span>{imageIndex + 1} / {property.images.length}</span></motion.div>}</AnimatePresence>
   </div>
