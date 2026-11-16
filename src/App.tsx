@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
@@ -19,11 +19,23 @@ import { getFilteredProperties, initialFilters, useAppStore } from './store/useA
 import type { AppNotification, Filters } from './store/useAppStore'
 import './App.css'
 
-const hero = 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=90'
-const iconImages = [
-  'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80',
-  'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=300&q=80',
+const heroSlides = [
+  {
+    img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=90',
+    label: 'Mountain vistas',
+  },
+  {
+    img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=90',
+    label: 'Wide open land',
+  },
+  {
+    img: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1400&q=90',
+    label: 'Desert sunsets',
+  },
+  {
+    img: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1400&q=90',
+    label: 'Room to roam',
+  },
 ]
 const counties = ['Cochise', 'Pima', 'Graham', 'Santa Cruz']
 const featureOptions = ['Well', 'Gated community', 'Horses allowed', 'Mountain views', 'Near National Forest', 'Commercial potential', 'Owner financing']
@@ -253,11 +265,68 @@ function App() {
 
 
 
+function HeroCarousel() {
+  const [index, setIndex] = useState(0)
+  const [direction, setDirection] = useState(1)
+  const touchStartX = useRef(0)
+  const total = heroSlides.length
+
+  const goTo = useCallback((next: number, dir?: number) => {
+    setDirection(dir ?? (next > index ? 1 : -1))
+    setIndex((next + total) % total)
+  }, [index, total])
+
+  useEffect(() => {
+    const timer = setInterval(() => goTo((index + 1) % total, 1), 4500)
+    return () => clearInterval(timer)
+  }, [index, goTo, total])
+
+  return (
+    <div
+      className="hero-carousel"
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+      onTouchEnd={(e) => {
+        const diff = touchStartX.current - e.changedTouches[0].clientX
+        if (Math.abs(diff) > 42) goTo(diff > 0 ? index + 1 : index - 1, diff > 0 ? 1 : -1)
+      }}
+    >
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.div
+          key={index}
+          className="hero-carousel-slide"
+          style={{ backgroundImage: `url("${heroSlides[index].img}")` }}
+          custom={direction}
+          variants={{
+            enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0.6 }),
+            center: { x: 0, opacity: 1 },
+            exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0.6 }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.48, ease: [0.32, 0, 0.18, 1] }}
+        />
+      </AnimatePresence>
+      <div className="hero-overlay" />
+      <div className="hero-carousel-dots">
+        {heroSlides.map((_, i) => (
+          <button
+            key={i}
+            className={`hero-dot ${i === index ? 'active' : ''}`}
+            onClick={() => goTo(i)}
+            aria-label={`Slide ${i + 1}: ${heroSlides[i].label}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function Home() {
   const navigate = useNavigate()
   return <div className="home-screen">
-    <section className="hero-panel" style={{ backgroundImage: `url("${hero}")` }}>
-      <div className="hero-overlay" />
+    <section className="hero-panel">
+      <HeroCarousel />
       <div className="hero-eyebrow"><span className="eyebrow-line" /> A DIFFERENT KIND OF PLACE <span className="eyebrow-line" /></div>
       <h1>Find your<br /><em>Arizona</em> moment.</h1>
       <p>Room to roam. Space to grow. A place to call yours.</p>

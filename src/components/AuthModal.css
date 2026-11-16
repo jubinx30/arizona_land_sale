@@ -333,29 +333,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Social Row */
-.auth-social-row {
-  display: flex;
-  gap: 10px;
-}
-
-.auth-social-btn {
-  flex: 1;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  background: #ffffff;
-  color: #334155;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.18s, background 0.18s, transform 0.15s;
-}
-
 .auth-social-btn:hover {
   border-color: #cbd5e1;
   background: #f8fafc;
