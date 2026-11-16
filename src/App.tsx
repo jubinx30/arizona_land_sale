@@ -264,29 +264,17 @@ function Home() {
       <div className="hero-cta-row"><button className="hero-button" onClick={() => navigate('/search')}>Explore properties <ArrowRight size={16} /></button></div>
     </section>
 
-    <section className="welcome-strip">
-      <span className="welcome-kicker">ARIZONA LIFE · SOUTHERN ARIZONA</span>
-      <h2>Serving Southern<br />Arizona Counties</h2><div className="heading-underline" />
-      <p>From wide-open desert to mountain hideaways, find your place in the landscape you love.</p>
-    </section>
-
-    <section className="quick-links">
-      {[
-        { label: 'Featured\nProperties', path: '/search', image: iconImages[0] },
-        { label: 'Find by\nProperty Type', path: '/browse/type', image: iconImages[1] },
-        { label: 'Search by\nState', path: '/browse/state', image: iconImages[2] },
-      ].map((item) => <button className="quick-link" key={item.label} onClick={() => navigate(item.path)}><span className="quick-image" style={{ backgroundImage: `url("${item.image}")` }}><ArrowRight size={15} /></span><span>{item.label.split('\n').map((line) => <span key={line}>{line}</span>)}</span></button>)}
-    </section>
+  
 
     <section className="section-block featured-section">
-      <SectionHeading kicker="A FEW PLACES WE LOVE" title="Featured Properties" action="View all" onAction={() => navigate('/search')} />
+      <SectionHeading kicker="Serving Southern  Arizona Counties" title="Featured Properties" action="View all" onAction={() => navigate('/search')} />
       <div className="featured-scroller">{properties.slice(0, 5).map((property) => <PropertyCard key={property.id} property={property} compact />)}<button className="see-all-card" onClick={() => navigate('/search')}><span><ArrowRight /></span><strong>See all<br />properties</strong><small>12 places to explore</small></button></div>
-      <div className="scroll-hint"><span /> SWIPE TO EXPLORE <span /></div>
     </section>
+   
+    <section className="partner-section"><span className="welcome-kicker">GOOD COMPANY, GREAT PLACES</span><h3>Our trusted partners</h3><div className="partner-marquee"><div className="partner-track">{['MINERAL MARKETING', 'LAND id', 'JOHN DEERE', 'GLOBAL AUCTION GUIDE', 'ReScore', 'UC HUNTING PROPERTIES', 'MINERAL MARKETING', 'LAND id', 'JOHN DEERE'].map((partner, index) => <span key={`${partner}-${index}`}>{partner}</span>)}</div></div></section>
 
     <section className="section-block type-section">
       <SectionHeading kicker="MAKE IT YOUR OWN" title="Find your kind of place" />
-      <p className="section-intro">Every landscape has a story. Which one feels like yours?</p>
       <div className="category-grid">{categories.map((category, index) => <button key={category} className={`category-chip ${index < 3 ? 'category-chip--featured' : ''}`} onClick={() => navigate(`/browse/${encodeURIComponent(category.toLowerCase())}`)}>{category === 'Mountain' ? <Mountain size={15} /> : category.includes('Home') ? <House size={15} /> : category === 'Commercial' ? <Building2 size={15} /> : <Trees size={15} />}{category}<ChevronRight size={14} /></button>)}</div>
       <button className="browse-count" onClick={() => navigate('/browse/type')}>Browse all property types <ArrowRight size={15} /></button>
       <div className="browse-shortcuts" aria-label="More ways to browse">
@@ -294,7 +282,6 @@ function Home() {
       </div>
     </section>
 
-    <section className="partner-section"><span className="welcome-kicker">GOOD COMPANY, GREAT PLACES</span><h3>Our trusted partners</h3><div className="partner-marquee"><div className="partner-track">{['MINERAL MARKETING', 'LAND id', 'JOHN DEERE', 'GLOBAL AUCTION GUIDE', 'ReScore', 'UC HUNTING PROPERTIES', 'MINERAL MARKETING', 'LAND id', 'JOHN DEERE'].map((partner, index) => <span key={`${partner}-${index}`}>{partner}</span>)}</div></div></section>
     <section className="promise-card">
       <div className="promise-icon"><Compass size={21} /></div><div><span className="welcome-kicker">ROOTED HERE. READY TO HELP.</span><h3>Local knowledge.<br />A personal touch.</h3><p>We know this land, these communities, and what makes southern Arizona feel like home.</p><button onClick={() => navigate('/contact')}>Meet your local broker <ArrowRight size={15} /></button></div>
     </section>
