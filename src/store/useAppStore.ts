@@ -110,13 +110,52 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   })),
 }), { name: 'arizona-life-app' }))
 
+export function propertyMatchesType(property: Property, type: string) {
+  const t = type.toLowerCase()
+  const pt = property.type.toLowerCase()
+  if (pt === t) return true
+  if (t === 'land' && pt === 'desert') return true
+  if (t === 'country homes') {
+    return (
+      pt.includes('home') ||
+      pt === 'residential' ||
+      property.title.toLowerCase().includes('home') ||
+      property.description.toLowerCase().includes('home') ||
+      property.description.toLowerCase().includes('country living') ||
+      property.features.some((f) => f.toLowerCase().includes('single-family') || f.toLowerCase().includes('buildable'))
+    )
+  }
+  if (t === 'equine') {
+    return property.features.some((f) => f.toLowerCase().includes('horse') || f.toLowerCase().includes('livestock'))
+  }
+  if (t === 'investment & income') {
+    return (
+      pt === 'commercial' ||
+      property.features.some((f) => f.toLowerCase().includes('investment') || f.toLowerCase().includes('commercial'))
+    )
+  }
+  if (t === 'retirement & active adult') {
+    return property.features.some((f) => f.toLowerCase().includes('gated') || f.toLowerCase().includes('quiet') || f.toLowerCase().includes('town access'))
+  }
+  if (t === 'commercial') {
+    return pt === 'commercial' || property.features.some((f) => f.toLowerCase().includes('commercial'))
+  }
+  if (t === 'recreational') {
+    return pt === 'recreational' || property.features.some((f) => f.toLowerCase().includes('recreation') || f.toLowerCase().includes('national forest'))
+  }
+  if (t === 'owner financing') {
+    return property.features.some((f) => f.toLowerCase().includes('financing') || f.toLowerCase().includes('affordable') || f.toLowerCase().includes('lot available'))
+  }
+  return false
+}
+
 export function getFilteredProperties(listings: Property[], filters: Filters) {
   return listings.filter((property) =>
     property.price >= filters.minPrice &&
     property.price <= filters.maxPrice &&
     property.acres >= filters.minAcres &&
     property.acres <= filters.maxAcres &&
-    (!filters.types.length || filters.types.includes(property.type) || filters.types.includes('Land') && property.type === 'Desert') &&
+    (!filters.types.length || filters.types.some((t) => propertyMatchesType(property, t))) &&
     (!filters.counties.length || filters.counties.includes(property.county)) &&
     (!filters.cities.length || filters.cities.includes(property.city)) &&
     filters.features.every((feature) => property.features.some((item) => item.toLowerCase().includes(feature.toLowerCase())))

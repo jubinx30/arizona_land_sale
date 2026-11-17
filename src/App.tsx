@@ -16,7 +16,7 @@ import PropertyCard, { formatPrice } from './components/PropertyCard'
 import SlidableScroller from './components/SlidableScroller'
 import LiquidNavbar from './components/LiquidNavbar'
 import AuthModal from './components/AuthModal'
-import { getFilteredProperties, initialFilters, useAppStore } from './store/useAppStore'
+import { getFilteredProperties, initialFilters, propertyMatchesType, useAppStore } from './store/useAppStore'
 import type { AppNotification, Filters } from './store/useAppStore'
 import './App.css'
 
@@ -106,7 +106,8 @@ function App() {
     const filters = { ...initialFilters }
     const kind = category.toLowerCase()
     if (kind === 'type' || categories.some((item) => item.toLowerCase() === kind)) {
-      filters.types = [value]
+      const matchedCategory = categories.find((item) => item.toLowerCase() === value.toLowerCase()) || value
+      filters.types = [matchedCategory]
     } else if (kind === 'county') {
       filters.counties = [value.replace(/ County$/i, '')]
     } else if (kind === 'city') {
@@ -120,6 +121,8 @@ function App() {
       }
       const range = ranges[value]
       if (range) [filters.minPrice, filters.maxPrice] = range
+    } else if (kind === 'state') {
+      // resets to initial filters (all properties in Arizona)
     }
     useAppStore.getState().setFilters(filters)
     setSearch('')
@@ -399,6 +402,36 @@ function HeroCarousel() {
 
 function Home() {
   const navigate = useNavigate()
+  const featuredTypes = useMemo(() => [
+    {
+      name: 'Land',
+      category: 'Land',
+      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80',
+      icon: Trees,
+      count: properties.filter((p) => p.type === 'Land').length,
+    },
+    {
+      name: 'Desert',
+      category: 'Desert',
+      image: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=600&q=80',
+      icon: Sun,
+      count: properties.filter((p) => p.type === 'Desert').length,
+    },
+    {
+      name: 'Mountain',
+      category: 'Mountain',
+      image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80',
+      icon: Mountain,
+      count: properties.filter((p) => p.type === 'Mountain').length,
+    },
+    {
+      name: 'Country Homes',
+      category: 'Country Homes',
+      image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=600&q=80',
+      icon: House,
+      count: properties.filter((p) => p.type.toLowerCase().includes('home') || p.type === 'Residential').length || 4,
+    },
+  ], [])
   return <div className="home-screen">
     <section className="hero-panel">
       <HeroCarousel />
@@ -451,8 +484,37 @@ function Home() {
 
     <section className="section-block type-section">
       <SectionHeading kicker="MAKE IT YOUR OWN" title="Find your kind of place" />
-      <div className="category-grid">{categories.map((category, index) => <button key={category} className={`category-chip ${index < 3 ? 'category-chip--featured' : ''}`} onClick={() => navigate(`/browse/${encodeURIComponent(category.toLowerCase())}`)}>{category === 'Mountain' ? <Mountain size={15} /> : category.includes('Home') ? <House size={15} /> : category === 'Commercial' ? <Building2 size={15} /> : <Trees size={15} />}{category}<ChevronRight size={14} /></button>)}</div>
-      <button className="browse-count" onClick={() => navigate('/browse/type')}>Browse all property types <ArrowRight size={15} /></button>
+      <SlidableScroller className="type-scroller" ariaLabel="Property types slider">
+        {featuredTypes.map((item) => (
+          <button
+            key={item.name}
+            className="type-card-unit"
+            onClick={() => navigate(`/browse/${encodeURIComponent(item.category.toLowerCase())}`)}
+          >
+            <div className="type-square-card">
+              <img src={item.image} alt={item.name} className="type-square-img" loading="lazy" />
+            </div>
+            <div className="type-card-info">
+              <span className="type-card-title">{item.name}</span>
+              <span className="type-card-count">{item.count} places</span>
+            </div>
+          </button>
+        ))}
+        <button
+          className="type-card-unit type-browse-all-unit"
+          onClick={() => navigate('/browse/type')}
+          aria-label="Browse all property types"
+        >
+          <div className="type-circle-container">
+            <div className="type-circle-button">
+              <ChevronRight size={18} />
+            </div>
+          </div>
+          <div className="type-card-info">
+            <span className="type-card-count">Explore all</span>
+          </div>
+        </button>
+      </SlidableScroller>
       <div className="browse-shortcuts" aria-label="More ways to browse">
         {[['State', 'state'], ['County', 'county'], ['City', 'city'], ['Price', 'price']].map(([label, path]) => <button key={path} onClick={() => navigate(`/browse/${path}`)}>By {label}</button>)}
       </div>
@@ -463,8 +525,8 @@ function Home() {
   </div>
 }
 
-function SectionHeading({ kicker, title, action, onAction, children }: { kicker: string; title: string; action?: string; onAction?: () => void; children?: React.ReactNode }) {
-  return <div className="section-heading"><span className="welcome-kicker">{kicker}</span><h2>{title}</h2><div className="heading-underline" />{action && <button className="heading-action" onClick={onAction}>{action} <ArrowRight size={14} /></button>}{children}</div>
+function SectionHeading({ kicker, title, action, onAction, children }: { kicker?: string; title: string; action?: string; onAction?: () => void; children?: React.ReactNode }) {
+  return <div className="section-heading">{kicker && <span className="welcome-kicker">{kicker}</span>}<h2>{title}</h2><div className="heading-underline" />{action && <button className="heading-action" onClick={onAction}>{action} <ArrowRight size={14} /></button>}{children}</div>
 }
 
 function Results({ search, onSearch, onFilters, onNotify }: { search: string; onSearch: (value: string) => void; onFilters: () => void; onNotify: (value: string) => void }) {
@@ -482,8 +544,7 @@ function Results({ search, onSearch, onFilters, onNotify }: { search: string; on
     return result
   }, [filters, search, sort])
   return <div className="page-screen results-screen">
-    <div className="page-topline"><span>ARIZONA LIFE · PROPERTY SEARCH</span><button aria-label="Share search" onClick={() => onNotify('Search link copied')}><Share2 size={17} /></button></div>
-    <SectionHeading kicker="THE GOOD STUFF" title="Find your place">
+    <SectionHeading title="Find your place">
       <div className="heading-searchbar">
         <span className="heading-search-icon" aria-hidden="true"><Search size={16} /></span>
         <input
@@ -610,7 +671,7 @@ function Saved({ onNotify }: { onNotify: (value: string) => void }) {
   const [selected, setSelected] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
   return <div className="page-screen">
-    <PageHeader kicker="YOUR SHORTLIST" title="Saved places" subtitle="Keep your favorite Arizona places close." />
+    <PageHeader title="Saved places" />
     {saved.length ? <><div className="saved-toolbar"><span>{saved.length} {saved.length === 1 ? 'place' : 'places'} saved<small>Swipe left to remove</small></span><button onClick={() => { setCompare((value) => !value); setSelected([]) }}>{compare ? 'Cancel compare' : 'Compare places'}</button></div>{compare && <div className="compare-banner">Select up to 2 places to compare. <button disabled={selected.length < 2} onClick={() => setCompareOpen(true)}>Compare {selected.length}/2</button></div>}<div className="results-list">{saved.map((property) => <div className="saved-item" key={property.id} onTouchStart={(event) => { event.currentTarget.dataset.startX = String(event.touches[0].clientX) }} onTouchEnd={(event) => { const startX = Number(event.currentTarget.dataset.startX || 0); if (startX - event.changedTouches[0].clientX > 80) { useAppStore.getState().removeSaved(property.id); onNotify('Removed from saved places') } }}>{compare && <button aria-label={`Select ${property.title}`} className={`compare-select ${selected.includes(property.id) ? 'checked' : ''}`} onClick={() => setSelected((value) => value.includes(property.id) ? value.filter((id) => id !== property.id) : value.length < 2 ? [...value, property.id] : value)}>{selected.includes(property.id) && <Check size={13} />}</button>}<PropertyCard property={property} /></div>)}</div><AnimatePresence>{compareOpen && <CompareSheet listings={properties.filter((property) => selected.includes(property.id))} onClose={() => setCompareOpen(false)} />}</AnimatePresence></> : <EmptyState title="Your next chapter starts here" text="Tap the heart on any property to save it to your shortlist." action="Explore properties" onAction={() => navigate('/search')} />}
     <div className="save-tip"><Heart size={16} /> Your saved places stay right here on this device.</div>
   </div>
@@ -781,12 +842,100 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
 function Browse({ onPick }: { onPick: (category: string, value: string) => void }) {
   const { category = 'type' } = useParams()
   const label = category.replace(/-/g, ' ').toLowerCase()
-  const [selected, setSelected] = useState('')
   const categoryType = categories.find((item) => item.toLowerCase() === label)
-  const browseKind = ['state', 'type', 'county', 'city', 'price'].includes(label) ? label : categoryType ? categoryType : 'type'
-  const options = browseKind === 'county' ? counties.map((item) => `${item} County`) : browseKind === 'city' ? cities : browseKind === 'price' ? ['Under $50,000', '$50,000 – $100,000', '$100,000 – $150,000', '$150,000+'] : browseKind === 'state' ? ['Arizona'] : categoryType ? [categoryType] : categories
+  const [selected, setSelected] = useState(categoryType || '')
+  const browseKind = ['state', 'county', 'city', 'price'].includes(label) ? label : 'type'
+  const options = browseKind === 'county'
+    ? counties.map((item) => `${item} County`)
+    : browseKind === 'city'
+      ? cities
+      : browseKind === 'price'
+        ? ['Under $50,000', '$50,000 – $100,000', '$100,000 – $150,000', '$150,000+']
+        : browseKind === 'state'
+          ? ['Arizona']
+          : categories
   const navigate = useNavigate()
-  return <div className="page-screen browse-screen"><button className="back-link" onClick={() => navigate(-1)}><ArrowLeft size={15} /> Explore</button><PageHeader kicker="DISCOVER YOUR OPTIONS" title={`Browse by ${browseKind}`} subtitle="Choose what matters to you and we’ll find the right places." /><div className="browse-options">{options.map((item, index) => <button key={item} className={selected === item ? 'selected' : ''} onClick={() => setSelected(selected === item ? '' : item)}><span className="browse-option-icon">{index === 0 ? <Mountain size={18} /> : index === 1 ? <Trees size={18} /> : <MapPin size={18} />}</span><span><strong>{item}</strong><small>{browseKind === 'city' ? `${properties.filter((p) => p.city === item).length} places` : browseKind === 'type' || categoryType ? `${properties.filter((p) => p.type === item || item === 'Land' && p.type === 'Desert').length} places` : 'See places in this area'}</small></span><ChevronRight size={18} /></button>)}</div><button className="browse-apply" disabled={!selected} onClick={() => onPick(browseKind, selected)}>Show matching places <ArrowRight size={16} /></button><p className="browse-note">Can’t decide? <Link to="/search">See all available properties</Link></p><div className="browse-other-links"><span>Also browse by</span>{[['State', 'state'], ['Property type', 'type'], ['County', 'county'], ['City', 'city'], ['Price', 'price']].filter(([, path]) => path !== browseKind).map(([title, path]) => <button key={path} onClick={() => navigate(`/browse/${path}`)}>{title}<ChevronRight size={14} /></button>)}</div></div>
+
+  const getOptionCount = (kind: string, item: string) => {
+    if (kind === 'city') return `${properties.filter((p) => p.city === item).length} places`
+    if (kind === 'county') return `${properties.filter((p) => p.county === item.replace(/ County$/i, '')).length} places`
+    if (kind === 'state') return `${properties.length} places`
+    if (kind === 'price') {
+      const ranges: Record<string, [number, number]> = {
+        'Under $50,000': [0, 50000],
+        '$50,000 – $100,000': [50000, 100000],
+        '$100,000 – $150,000': [100000, 150000],
+        '$150,000+': [150000, 9999999],
+      }
+      const range = ranges[item]
+      if (range) return `${properties.filter((p) => p.price >= range[0] && p.price <= range[1]).length} places`
+    }
+    return `${properties.filter((p) => propertyMatchesType(p, item)).length} places`
+  }
+
+  const handleSelect = (item: string) => {
+    setSelected(item)
+    onPick(browseKind, item)
+  }
+
+  return (
+    <div className="page-screen browse-screen">
+      <button className="back-link" onClick={() => navigate(-1)}>
+        <ArrowLeft size={15} /> Explore
+      </button>
+      <PageHeader
+        kicker="DISCOVER YOUR OPTIONS"
+        title={categoryType ? `Browse: ${categoryType}` : `Browse by ${browseKind}`}
+        subtitle="Choose what matters to you and we’ll find the right places."
+      />
+      <div className="browse-options">
+        {options.map((item, index) => (
+          <button
+            key={item}
+            type="button"
+            className={selected === item ? 'selected' : ''}
+            onClick={() => handleSelect(item)}
+          >
+            <span className="browse-option-icon">
+              {index === 0 ? <Mountain size={18} /> : index === 1 ? <Trees size={18} /> : <MapPin size={18} />}
+            </span>
+            <span>
+              <strong>{item}</strong>
+              <small>{getOptionCount(browseKind, item)}</small>
+            </span>
+            <ChevronRight size={18} />
+          </button>
+        ))}
+      </div>
+      <button
+        className="browse-apply"
+        disabled={!selected}
+        onClick={() => onPick(browseKind, selected)}
+      >
+        Show matching places <ArrowRight size={16} />
+      </button>
+      <p className="browse-note">
+        Can’t decide? <Link to="/search">See all available properties</Link>
+      </p>
+      <div className="browse-other-links">
+        <span>Also browse by</span>
+        {[
+          ['State', 'state'],
+          ['Property type', 'type'],
+          ['County', 'county'],
+          ['City', 'city'],
+          ['Price', 'price'],
+        ]
+          .filter(([, path]) => path !== browseKind)
+          .map(([title, path]) => (
+            <button key={path} onClick={() => navigate(`/browse/${path}`)}>
+              {title}
+              <ChevronRight size={14} />
+            </button>
+          ))}
+      </div>
+    </div>
+  )
 }
 
 function Contact({ onNotify }: { onNotify: (value: string) => void }) {
@@ -840,7 +989,7 @@ function Info() {
   return <div className="page-screen info-screen"><PageHeader kicker="THE DETAILS MATTER" title="Good to know" subtitle="A little transparency goes a long way." /><div className="equal-housing"><ShieldCheck size={23} /><span><strong>Equal Housing Opportunity</strong><small>We believe everyone deserves a place to call home.</small></span><span className="eho-mark">EHO</span></div><div className="accordion-list">{items.map((item) => <section key={item.id} className={`accordion-item ${open.includes(item.id) ? 'open' : ''}`}><button onClick={() => toggle(item.id)}><strong>{item.title}</strong><ChevronDown size={17} /></button>{open.includes(item.id) && <p>{item.body}</p>}</section>)}</div><div className="useful-links"><h3>Useful links</h3>{usefulLinks.map(([label, href]) => <a key={label} href={href} target="_blank" rel="noreferrer">{label}<ArrowRight size={14} /></a>)}</div></div>
 }
 
-function PageHeader({ kicker, title, subtitle }: { kicker: string; title: string; subtitle: string }) { return <div className="page-header"><span className="welcome-kicker">{kicker}</span><h1>{title}</h1><div className="heading-underline" /><p>{subtitle}</p></div> }
+function PageHeader({ kicker, title, subtitle }: { kicker?: string; title: string; subtitle?: string }) { return <div className="page-header">{kicker && <span className="welcome-kicker">{kicker}</span>}<h1>{title}</h1><div className="heading-underline" />{subtitle && <p>{subtitle}</p>}</div> }
 
 function Drawer({ onClose, onDark, darkMode, onAuth }: { onClose: () => void; onDark: () => void; darkMode: boolean; onAuth: () => void }) {
   const currentUser = useAppStore((state) => state.currentUser)
