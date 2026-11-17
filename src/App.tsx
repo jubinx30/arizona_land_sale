@@ -7,7 +7,7 @@ import {
   ArrowDownUp, ArrowLeft, ArrowRight, BadgeCheck, Bell, Building2, Calendar, Camera, Check, ChevronDown, ChevronLeft,
   ChevronRight, Clock3, Compass, DollarSign, Heart, House, LandPlot, Layers,
   Mail, MapPin, Maximize2, MessageCircle, Moon, Mountain, Pause, Phone, Play, RotateCcw, RotateCw, Satellite, Search, Send, Share2, ShieldCheck,
-  SlidersHorizontal, Sun, Trees, User as UserIcon, Users, Video, Volume2, VolumeX, X,
+  SlidersHorizontal, Sun, Trees, User as UserIcon, Users, Volume2, VolumeX, X,
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { categories, cities, properties } from './data/properties'
@@ -237,9 +237,13 @@ function App() {
             </button>
             <button className="user-trigger" aria-label={currentUser ? `Account (${currentUser.name})` : 'Sign in or create account'} onClick={() => setAuthOpen(true)}>
               {currentUser ? (
-                <span className="user-avatar-badge">
-                  {currentUser.name.slice(0, 1).toUpperCase()}
-                </span>
+                currentUser.avatar ? (
+                  <img src={currentUser.avatar} alt={currentUser.name} className="user-avatar-badge-img" />
+                ) : (
+                  <span className="user-avatar-badge">
+                    {currentUser.name.slice(0, 1).toUpperCase()}
+                  </span>
+                )
               ) : (
                 <UserIcon size={19} />
               )}
@@ -460,7 +464,6 @@ function Home() {
     </section>
    
     <section className="partner-section">
-      <span className="welcome-kicker">GOOD COMPANY, GREAT PLACES</span>
       <h3>Our trusted partners</h3>
       <div className="partner-marquee">
         <div className="partner-track">
@@ -1113,7 +1116,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
           }}
         >
           <Play size={12} fill={mediaTab === 'video' ? 'currentColor' : 'none'} />
-          <span>Aerial Video Tour ({propertyVideo.duration})</span>
+          <span>Video Tour ({propertyVideo.duration})</span>
         </button>
       </div>
 
@@ -1296,41 +1299,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
         <div className="detail-address"><MapPin size={17} />{property.address}</div>
         <div className="detail-divider" />
 
-        {/* Video & Aerial Tour Feature Card */}
-        <div className="detail-video-feature-card">
-          <div className="detail-video-header">
-            <div className="video-badge-icon"><Video size={18} /></div>
-            <div>
-              <span className="welcome-kicker">AERIAL & GROUND COVERAGE</span>
-              <h3 className="detail-video-name">{propertyVideo.title}</h3>
-            </div>
-          </div>
-          <p className="detail-video-summary">
-            Take a virtual flight over {property.acres} acres of {property.city} landscape. Inspect terrain contours, natural vegetation, boundary perimeters, and surrounding Arizona mountain vistas in high definition.
-          </p>
-          <div className="video-feature-tags">
-            <span><Check size={13} /> Surveyed Boundary</span>
-            <span><Check size={13} /> Road & Utility Access</span>
-            <span><Check size={13} /> Mountain Vistas</span>
-            <span><Check size={13} /> Terrain Contours</span>
-          </div>
-          <button
-            className="detail-launch-video-btn"
-            onClick={() => {
-              setMediaTab('video')
-              setShowControls(true)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-              window.setTimeout(() => {
-                detailVideoRef.current?.play().then(() => {
-                  setIsVideoPlaying(true)
-                  scheduleControlsHide()
-                }).catch(() => {})
-              }, 300)
-            }}
-          >
-            <Play size={14} fill="currentColor" /> Watch Aerial Video Tour ({propertyVideo.duration})
-          </button>
-        </div>
+     
 
         <h2 className="detail-section-title">The details</h2>
         <div className="facts-grid"><Fact icon={<LandPlot />} label="Property size" value={`${property.acres} acres`} /><Fact icon={<Compass />} label="Property type" value={property.type} /><Fact icon={<MapPin />} label="County" value={`${property.county} County`} /><Fact icon={<Building2 />} label="Location" value={`${property.city}, AZ`} /></div>
@@ -1572,12 +1541,13 @@ function PageHeader({ kicker, title, subtitle }: { kicker?: string; title: strin
 function Drawer({ onClose, onDark, darkMode, onAuth }: { onClose: () => void; onDark: () => void; darkMode: boolean; onAuth: () => void }) {
   const currentUser = useAppStore((state) => state.currentUser)
   const links = [{ label: 'Home', to: '/' }, { label: 'Buyers', to: '/browse/type' }, { label: 'Sellers', to: '/contact' }, { label: 'Meet Our Team', to: '/contact' }, { label: 'Recently Sold', to: '/search' }, { label: 'Contact Us', to: '/contact' }, { label: 'Privacy Statement', to: '/info' }, { label: 'Terms of Use', to: '/info' }]
-  return <div className="drawer-backdrop" onClick={onClose}><motion.aside className="side-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 280 }} onClick={(event) => event.stopPropagation()}><div className="drawer-top"><div className="drawer-logo"><div className="uc-mark">UC</div><div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div></div><button className="round-close" onClick={onClose}><X size={18} /></button></div><div className="drawer-user-strip" onClick={() => { onAuth(); onClose() }}><div className="drawer-user-avatar">{currentUser ? currentUser.name[0].toUpperCase() : <UserIcon size={17} />}</div><div className="drawer-user-copy"><strong>{currentUser ? currentUser.name : 'Sign in / Create account'}</strong><small>{currentUser ? currentUser.email : 'Personalized places & alerts'}</small></div><ChevronRight size={16} /></div><span className="welcome-kicker drawer-kicker">EXPLORE ARIZONA LIFE</span><nav>{links.map((link, index) => <Link key={link.label} to={link.to} onClick={onClose}><span>{link.label}</span>{index < 4 && <ArrowRight size={15} />}</Link>)}</nav><div className="drawer-bottom"><button className="mode-toggle" onClick={onDark}><span>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</span><span className={`switch ${darkMode ? 'on' : ''}`}><i /></span></button><p>Arizona Life Homes and Land<br />A United Country Real Estate office</p><Link to="/info" onClick={onClose}>Legal & accessibility <ArrowRight size={14} /></Link></div></motion.aside></div>
+  return <div className="drawer-backdrop" onClick={onClose}><motion.aside className="side-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 280 }} onClick={(event) => event.stopPropagation()}><div className="drawer-top"><div className="drawer-logo"><div className="uc-mark">UC</div><div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div></div><button className="round-close" onClick={onClose}><X size={18} /></button></div><div className="drawer-user-strip" onClick={() => { onAuth(); onClose() }}><div className="drawer-user-avatar">{currentUser ? (currentUser.avatar ? <img src={currentUser.avatar} alt={currentUser.name} className="drawer-avatar-img" /> : currentUser.name[0].toUpperCase()) : <UserIcon size={17} />}</div><div className="drawer-user-copy"><strong>{currentUser ? currentUser.name : 'Sign in / Create account'}</strong><small>{currentUser ? currentUser.email : 'Personalized places & alerts'}</small></div><ChevronRight size={16} /></div><span className="welcome-kicker drawer-kicker">EXPLORE ARIZONA LIFE</span><nav>{links.map((link, index) => <Link key={link.label} to={link.to} onClick={onClose}><span>{link.label}</span>{index < 4 && <ArrowRight size={15} />}</Link>)}</nav><div className="drawer-bottom"><button className="mode-toggle" onClick={onDark}><span>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</span><span className={`switch ${darkMode ? 'on' : ''}`}><i /></span></button><p>Arizona Life Homes and Land<br />A United Country Real Estate office</p><Link to="/info" onClick={onClose}>Legal & accessibility <ArrowRight size={14} /></Link></div></motion.aside></div>
 }
 
 function InquirySheet({ onClose, onSend }: { onClose: () => void; onSend: () => void }) {
+  const currentUser = useAppStore((state) => state.currentUser)
   const [message, setMessage] = useState('')
-  return <BottomSheet title="Let’s talk Arizona" onClose={onClose}><p className="inquiry-intro">A local broker is just a message away.</p><div className="inquiry-broker"><div className="broker-avatar">RF</div><div><strong>Rick Frank</strong><span>Southern Arizona Broker</span></div><span className="online-indicator"><i /> Here to help</span></div><label className="inquiry-label">What can we help you find?<textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="I’m interested in… (optional)" /></label><button className="primary-button inquiry-send" onClick={onSend}>Send a quick inquiry <ArrowRight size={16} /></button><a className="inquiry-call" href="tel:+15204033903"><Phone size={15} /> Or call Rick at (520) 403-3903</a></BottomSheet>
+  return <BottomSheet title="Let’s talk Arizona" onClose={onClose}><p className="inquiry-intro">{currentUser ? `Connecting as ${currentUser.name} (${currentUser.email})` : 'A local broker is just a message away.'}</p><div className="inquiry-broker"><div className="broker-avatar">RF</div><div><strong>Rick Frank</strong><span>Southern Arizona Broker</span></div><span className="online-indicator"><i /> Here to help</span></div><label className="inquiry-label">What can we help you find?<textarea rows={3} value={message} onChange={(event) => setMessage(event.target.value)} placeholder={currentUser?.bio ? `I’m interested in… (e.g. ${currentUser.bio.slice(0, 50)}…)` : 'I’m interested in… (optional)'} /></label><button className="primary-button inquiry-send" onClick={onSend}>Send a quick inquiry <ArrowRight size={16} /></button><a className="inquiry-call" href="tel:+15204033903"><Phone size={15} /> Or call Rick at (520) 403-3903</a></BottomSheet>
 }
 
 function Onboarding({ onDone }: { onDone: () => void }) {

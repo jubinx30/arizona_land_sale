@@ -2,11 +2,32 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Property } from '../data/properties'
 
+export type UserPreferences = {
+  buyerType?: string
+  targetAcreage?: string
+  budgetRange?: string
+  preferredCounties?: string[]
+  preferredTypes?: string[]
+  mustHaves?: string[]
+  notifications?: {
+    priceDrops: boolean
+    newListings: boolean
+    tourReminders: boolean
+    marketReports: boolean
+  }
+}
+
 export type User = {
   name: string
   email: string
   phone?: string
+  username?: string
+  avatar?: string
+  location?: string
+  bio?: string
+  buyerType?: string
   memberSince: string
+  preferences?: UserPreferences
 }
 
 export type Filters = {
@@ -60,6 +81,7 @@ const initialNotifications: AppNotification[] = [
 type AppState = {
   currentUser: User | null
   setCurrentUser: (user: User | null) => void
+  updateCurrentUser: (updates: Partial<User>) => void
   savedIds: string[]
   filters: Filters
   recentSearches: string[]
@@ -92,6 +114,10 @@ export const initialFilters: Filters = {
 export const useAppStore = create<AppState>()(persist((set) => ({
   currentUser: null,
   setCurrentUser: (user) => set({ currentUser: user }),
+  updateCurrentUser: (updates) =>
+    set((state) => ({
+      currentUser: state.currentUser ? { ...state.currentUser, ...updates } : null,
+    })),
   savedIds: [],
   filters: initialFilters,
   recentSearches: [],
@@ -136,7 +162,7 @@ export function propertyMatchesType(property: Property, type: string) {
   if (t === 'equine') {
     return property.features.some((f) => f.toLowerCase().includes('horse') || f.toLowerCase().includes('livestock'))
   }
-  if (t === 'investment & income') {
+  if (t === 'investment & income' || t === 'investment') {
     return (
       pt === 'commercial' ||
       property.features.some((f) => f.toLowerCase().includes('investment') || f.toLowerCase().includes('commercial'))

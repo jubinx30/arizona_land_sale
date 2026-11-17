@@ -270,9 +270,11 @@
 .user-trigger:hover { background: #f0f5f2; }
 .user-trigger:active { background: #f0f5f2; transform: scale(0.95); }
 .user-avatar-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: white; font-size: 12px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(31, 122, 84, 0.28); }
+.user-avatar-badge-img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--green); box-shadow: 0 2px 6px rgba(31, 122, 84, 0.28); }
 .drawer-user-strip { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f0f6f3; border-radius: 14px; margin: 12px 0 16px; cursor: pointer; transition: background 0.18s; }
 .drawer-user-strip:hover { background: #e5efe9; }
-.drawer-user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: white; font-size: 15px; font-weight: 700; display: grid; place-items: center; }
+.drawer-user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: white; font-size: 15px; font-weight: 700; display: grid; place-items: center; overflow: hidden; }
+.drawer-avatar-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 .drawer-user-copy { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .drawer-user-copy strong { font-size: 13px; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .drawer-user-copy small { font-size: 11px; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -333,7 +335,7 @@
 
 /* Home */
 .hero-panel {
-  min-height: 291px;
+  min-height: 200px;
   position: relative;
   padding: 36px 25px 14px;
   color: #fff;

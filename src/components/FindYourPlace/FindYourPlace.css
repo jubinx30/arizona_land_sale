@@ -1,0 +1,719 @@
+/* ==========================================================================
+   Find Your Kind of Place - Modern Section Styles
+   ========================================================================== */
+
+.fyp-section {
+  background: #f6f7f5;
+  padding: 24px 16px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.25s ease;
+}
+
+/* Header */
+.fyp-section-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.fyp-eyebrow {
+  display: block;
+  color: #1b6b57;
+  font: 700 8.5px/1.3 'Montserrat', sans-serif;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.fyp-title {
+  margin: 0;
+  color: var(--navy);
+  font: 600 21px/1.25 'Montserrat', sans-serif;
+  letter-spacing: -0.4px;
+}
+
+.fyp-underline {
+  width: 42px;
+  height: 2px;
+  background: #1b6b57;
+  margin: 9px auto 0;
+  border-radius: 2px;
+}
+
+/* Segmented Control */
+.fyp-segmented-control-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.fyp-segmented-control {
+  display: inline-flex;
+  background: #e7ece9;
+  padding: 4px;
+  border-radius: 30px;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.fyp-tab-btn {
+  position: relative;
+  background: transparent;
+  border: 0;
+  min-height: 44px;
+  min-width: 90px;
+  padding: 0 18px;
+  border-radius: 24px;
+  font: 600 12px/1 'Montserrat', sans-serif;
+  color: #556570;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color 0.18s ease;
+  z-index: 1;
+}
+
+.fyp-tab-btn:hover {
+  color: #1b6b57;
+}
+
+.fyp-tab-btn.is-active {
+  color: #ffffff;
+}
+
+.fyp-active-pill {
+  position: absolute;
+  inset: 0;
+  background: #1b6b57;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(27, 107, 87, 0.35);
+  z-index: -1;
+}
+
+.fyp-tab-label {
+  position: relative;
+  z-index: 2;
+  letter-spacing: 0.1px;
+}
+
+/* Tab Content Viewport (keeps section height stable) */
+.fyp-tab-viewport {
+  min-height: 278px;
+  position: relative;
+}
+
+.fyp-tab-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Bento Grid */
+.fyp-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 102px);
+  gap: 8px;
+  width: 100%;
+}
+
+.fyp-bento-tile {
+  position: relative;
+  border-radius: 14px;
+  border: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  min-height: 44px;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease;
+  background-size: cover;
+  background-position: center;
+}
+
+.fyp-bento-tile:active {
+  transform: scale(0.98);
+}
+
+.fyp-hidden-preloader {
+  display: none;
+}
+
+/* Large Left Tile (Land) */
+.fyp-bento-land {
+  grid-row: span 2;
+  background-color: #1b6b57;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(27, 107, 87, 0.22);
+}
+
+.fyp-bento-land .fyp-bento-icon-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.fyp-bento-land .fyp-bento-title {
+  color: #ffffff;
+  font-size: 17px;
+}
+
+.fyp-bento-land .fyp-bento-subtitle {
+  color: #e3f4ec;
+  font-size: 10.5px;
+}
+
+/* Desert Tile (Right Top) */
+.fyp-bento-desert.flat-fill {
+  background-color: #faeeda;
+  border: 1px solid #ebd9bc;
+  box-shadow: 0 2px 8px rgba(99, 56, 6, 0.08);
+}
+
+.fyp-bento-desert.flat-fill .fyp-bento-icon-badge {
+  background: rgba(99, 56, 6, 0.12);
+  color: #633806;
+}
+
+.fyp-bento-desert.flat-fill .fyp-bento-title {
+  color: #633806;
+}
+
+.fyp-bento-desert.flat-fill .fyp-bento-subtitle {
+  color: #854f0b;
+}
+
+/* Mountain Tile (Right Bottom) */
+.fyp-bento-mountain.flat-fill {
+  background-color: #e6f1fb;
+  border: 1px solid #cfdeee;
+  box-shadow: 0 2px 8px rgba(12, 68, 124, 0.08);
+}
+
+.fyp-bento-mountain.flat-fill .fyp-bento-icon-badge {
+  background: rgba(12, 68, 124, 0.12);
+  color: #0c447c;
+}
+
+.fyp-bento-mountain.flat-fill .fyp-bento-title {
+  color: #0c447c;
+}
+
+.fyp-bento-mountain.flat-fill .fyp-bento-subtitle {
+  color: #185fa5;
+}
+
+/* Real Listing Photo Background Styling with Legibility Overlays */
+.fyp-bento-tile.has-bg-img {
+  color: #ffffff;
+}
+
+.fyp-bento-tile.has-bg-img .fyp-bento-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 25, 22, 0.28) 0%,
+    rgba(10, 18, 15, 0.82) 100%
+  );
+  z-index: 1;
+  transition: background-color 0.2s ease;
+}
+
+.fyp-bento-land.has-bg-img .fyp-bento-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(17, 60, 48, 0.35) 0%,
+    rgba(9, 32, 25, 0.88) 100%
+  );
+}
+
+.fyp-bento-desert.has-bg-img .fyp-bento-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(72, 38, 12, 0.32) 0%,
+    rgba(38, 20, 5, 0.86) 100%
+  );
+}
+
+.fyp-bento-mountain.has-bg-img .fyp-bento-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 45, 75, 0.32) 0%,
+    rgba(6, 26, 45, 0.88) 100%
+  );
+}
+
+.fyp-bento-tile.has-bg-img .fyp-bento-icon-badge {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.fyp-bento-tile.has-bg-img .fyp-bento-title {
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.fyp-bento-tile.has-bg-img .fyp-bento-subtitle {
+  color: #f1f5f9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Tile Internal Layout */
+.fyp-bento-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.fyp-bento-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.fyp-bento-land .fyp-bento-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.fyp-bento-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fyp-bento-title {
+  font: 600 14px/1.25 'Montserrat', sans-serif;
+  letter-spacing: -0.2px;
+}
+
+.fyp-bento-subtitle {
+  font: 500 10px/1.3 'Montserrat', sans-serif;
+  letter-spacing: 0.1px;
+}
+
+/* Chip Row (Horizontally Scrollable) */
+.fyp-chip-scroller {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin: 4px -16px 0;
+  padding: 2px 16px 6px;
+}
+
+.fyp-chip-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.fyp-chip-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: max-content;
+}
+
+.fyp-pill-chip {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid #e1e7e4;
+  color: var(--navy);
+  font: 600 11px/1 'Montserrat', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.fyp-pill-chip:active {
+  transform: scale(0.97);
+}
+
+.fyp-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #1b6b57;
+}
+
+.fyp-chip-name {
+  letter-spacing: -0.1px;
+}
+
+.fyp-chip-badge {
+  background: #eaf3ed;
+  color: #1b6b57;
+  font: 700 9.5px 'Montserrat', sans-serif;
+  padding: 3px 6px;
+  border-radius: 10px;
+  line-height: 1;
+}
+
+.fyp-explore-all-chip {
+  background: #eaf3ed;
+  border-color: #c7ded0;
+  color: #1b6b57;
+}
+
+.fyp-explore-all-chip:hover {
+  background: #d8ece0;
+}
+
+/* Location Tab Grid */
+.fyp-location-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.fyp-location-card {
+  min-height: 54px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fyp-location-card:active {
+  transform: scale(0.98);
+}
+
+.fyp-location-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #eaf3ed;
+  color: #1b6b57;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.fyp-location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fyp-location-name {
+  font: 600 12px/1.25 'Montserrat', sans-serif;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fyp-location-count {
+  font: 500 10px/1 'Montserrat', sans-serif;
+  color: #69747c;
+}
+
+/* Price Tab Grid */
+.fyp-price-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.fyp-price-card {
+  min-height: 54px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fyp-price-card:active {
+  transform: scale(0.98);
+}
+
+.fyp-price-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #eaf3ed;
+  color: #1b6b57;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.fyp-price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fyp-price-label {
+  font: 600 12px/1.25 'Montserrat', sans-serif;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fyp-price-count {
+  font: 500 10px/1 'Montserrat', sans-serif;
+  color: #69747c;
+}
+
+/* Skeleton Loading Shimmer */
+@keyframes fyp-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.fyp-skeleton-tile,
+.fyp-skeleton-chip {
+  background: linear-gradient(90deg, #e4eae6 25%, #f1f5f3 50%, #e4eae6 75%);
+  background-size: 200% 100%;
+  animation: fyp-shimmer 1.5s infinite;
+  border-color: transparent !important;
+}
+
+.fyp-skeleton-chip {
+  min-width: 100px;
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+.dark-mode .fyp-section {
+  background: #172127;
+}
+
+.dark-mode .fyp-title {
+  color: #edf2f7;
+}
+
+.dark-mode .fyp-eyebrow {
+  color: #86efac;
+}
+
+.dark-mode .fyp-underline {
+  background: #4ade80;
+}
+
+.dark-mode .fyp-segmented-control {
+  background: #131c22;
+  border-color: #2b3942;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .fyp-tab-btn {
+  color: #94a3b8;
+}
+
+.dark-mode .fyp-tab-btn:hover {
+  color: #e2e8f0;
+}
+
+.dark-mode .fyp-tab-btn.is-active {
+  color: #ffffff;
+}
+
+.dark-mode .fyp-active-pill {
+  background: #1b6b57;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Bento Grid Dark Mode */
+.dark-mode .fyp-bento-land {
+  background-color: #1b6b57;
+  border-color: #27856d;
+}
+
+.dark-mode .fyp-bento-desert.flat-fill {
+  background-color: #2b1f13;
+  border-color: #42301c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .fyp-bento-desert.flat-fill .fyp-bento-icon-badge {
+  background: rgba(254, 215, 170, 0.14);
+  color: #fed7aa;
+}
+
+.dark-mode .fyp-bento-desert.flat-fill .fyp-bento-title {
+  color: #fef3c7;
+}
+
+.dark-mode .fyp-bento-desert.flat-fill .fyp-bento-subtitle {
+  color: #fcd34d;
+}
+
+.dark-mode .fyp-bento-mountain.flat-fill {
+  background-color: #122234;
+  border-color: #1c3652;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .fyp-bento-mountain.flat-fill .fyp-bento-icon-badge {
+  background: rgba(186, 230, 253, 0.14);
+  color: #bae6fd;
+}
+
+.dark-mode .fyp-bento-mountain.flat-fill .fyp-bento-title {
+  color: #f0f9ff;
+}
+
+.dark-mode .fyp-bento-mountain.flat-fill .fyp-bento-subtitle {
+  color: #7dd3fc;
+}
+
+/* Photo overlays in dark mode */
+.dark-mode .fyp-bento-tile.has-bg-img .fyp-bento-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 18, 22, 0.4) 0%,
+    rgba(7, 13, 17, 0.9) 100%
+  );
+}
+
+/* Chips Dark Mode */
+.dark-mode .fyp-pill-chip {
+  background: #1e2b32;
+  border-color: #2e3e48;
+  color: #edf2f7;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.dark-mode .fyp-chip-icon {
+  color: #86efac;
+}
+
+.dark-mode .fyp-chip-badge {
+  background: #273b42;
+  color: #86efac;
+}
+
+.dark-mode .fyp-explore-all-chip {
+  background: #1c332c;
+  border-color: #2b5747;
+  color: #86efac;
+}
+
+.dark-mode .fyp-explore-all-chip:hover {
+  background: #224338;
+}
+
+/* Location & Price Cards Dark Mode */
+.dark-mode .fyp-location-card,
+.dark-mode .fyp-price-card {
+  background: #1e2b32;
+  border-color: #2e3e48;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.dark-mode .fyp-location-icon-wrap,
+.dark-mode .fyp-price-icon-wrap {
+  background: #26383f;
+  color: #86efac;
+}
+
+.dark-mode .fyp-location-name,
+.dark-mode .fyp-price-label {
+  color: #edf2f7;
+}
+
+.dark-mode .fyp-location-count,
+.dark-mode .fyp-price-count {
+  color: #94a3b8;
+}
+
+.dark-mode .fyp-skeleton-tile,
+.dark-mode .fyp-skeleton-chip {
+  background: linear-gradient(90deg, #1e2b32 25%, #293a43 50%, #1e2b32 75%);
+  background-size: 200% 100%;
+}
+
+/* ==========================================================================
+   Small Mobile Viewport Adjustments (<= 360px)
+   ========================================================================== */
+@media (max-width: 360px) {
+  .fyp-section {
+    padding: 20px 12px 24px;
+  }
+
+  .fyp-tab-btn {
+    min-width: 76px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+
+  .fyp-bento-grid {
+    grid-template-rows: repeat(2, 96px);
+  }
+
+  .fyp-bento-title {
+    font-size: 13px;
+  }
+
+  .fyp-bento-land .fyp-bento-title {
+    font-size: 15px;
+  }
+
+  .fyp-bento-subtitle {
+    font-size: 9.5px;
+  }
+
+  .fyp-location-name,
+  .fyp-price-label {
+    font-size: 11px;
+  }
+}
+

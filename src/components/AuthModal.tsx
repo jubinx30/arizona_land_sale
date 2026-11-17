@@ -2,17 +2,16 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowRight,
-  Check,
   Eye,
   EyeOff,
   Lock,
-  LogOut,
   Mail,
   ShieldCheck,
   User as UserIcon,
   X,
 } from 'lucide-react'
 import { useAppStore, type User } from '../store/useAppStore'
+import UserProfileView from './UserProfileView'
 import './AuthModal.css'
 
 interface AuthModalProps {
@@ -67,7 +66,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const user: User = {
         name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
         email: email.trim(),
+        username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+        phone: phone.trim() || '(602) 555-0142',
+        location: 'Tucson, AZ',
+        buyerType: 'Land Buyer & Homesteader',
+        bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.',
         memberSince: 'Today',
+        preferences: {
+          buyerType: 'Land Buyer & Homesteader',
+          targetAcreage: '5 - 20 acres',
+          budgetRange: '$100k - $250k',
+          preferredCounties: ['Cochise County', 'Pima County'],
+          preferredTypes: ['Desert Land', 'Country Homes'],
+          mustHaves: ['Mountain views', 'Off-grid solar ready'],
+          notifications: {
+            priceDrops: true,
+            newListings: true,
+            tourReminders: true,
+            marketReports: false,
+          },
+        },
       }
       setCurrentUser(user)
       localStorage.setItem('az-auth-completed', 'yes')
@@ -106,8 +124,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const user: User = {
         name: name.trim(),
         email: email.trim(),
+        username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_'),
         phone: phone.trim() || undefined,
+        location: 'Southern Arizona',
+        buyerType: 'Land Buyer & Homesteader',
+        bio: 'Looking for acreage or country property in Southern Arizona.',
         memberSince: 'Today',
+        preferences: {
+          buyerType: 'Land Buyer & Homesteader',
+          targetAcreage: '5 - 20 acres',
+          budgetRange: '$100k - $250k',
+          preferredCounties: ['Cochise County'],
+          preferredTypes: ['Desert Land', 'Country Homes'],
+          mustHaves: ['Mountain views', 'Off-grid solar ready'],
+          notifications: {
+            priceDrops: true,
+            newListings: true,
+            tourReminders: true,
+            marketReports: false,
+          },
+        },
       }
       setCurrentUser(user)
       localStorage.setItem('az-auth-completed', 'yes')
@@ -136,7 +172,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   return (
     <div className="auth-modal-backdrop" onClick={onClose}>
       <motion.div
-        className="auth-modal-card"
+        className={`auth-modal-card ${currentUser ? 'is-profile' : ''}`}
         initial={{ opacity: 0, y: 36, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -147,7 +183,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         <button
           className="auth-modal-close"
           onClick={handleGuestContinue}
-          aria-label="Close authentication modal"
+          aria-label="Close modal"
         >
           <X size={18} />
         </button>
@@ -157,40 +193,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           <div className="auth-uc-badge">UC</div>
           <div className="auth-brand-text">
             <strong>ARIZONA LIFE</strong>
-            <span>HOMES & LAND · UNITED COUNTRY</span>
+            <span>{currentUser ? 'CLIENT ACCOUNT & PROFILE' : 'HOMES & LAND · UNITED COUNTRY'}</span>
           </div>
         </div>
 
-        {/* If user is already logged in, show user profile card */}
+        {/* If user is already logged in, show user profile view */}
         {currentUser ? (
-          <div className="auth-logged-in-view">
-            <div className="auth-user-avatar">
-              {currentUser.name
-                .split(' ')
-                .map((n) => n[0])
-                .slice(0, 2)
-                .join('')
-                .toUpperCase()}
-            </div>
-            <h3>Signed in as</h3>
-            <h2>{currentUser.name}</h2>
-            <p className="auth-user-email">{currentUser.email}</p>
-
-            <div className="auth-member-perks">
-              <div><Check size={16} /> <span>Saved property shortlist synced</span></div>
-              <div><Check size={16} /> <span>Direct inquiries with broker Rick Frank</span></div>
-              <div><Check size={16} /> <span>Real-time price & acreage alerts</span></div>
-            </div>
-
-            <div className="auth-logged-in-actions">
-              <button className="primary-button auth-continue-btn" onClick={onClose}>
-                Explore Properties <ArrowRight size={16} />
-              </button>
-              <button className="auth-signout-btn" onClick={handleSignOut}>
-                <LogOut size={16} /> Sign out
-              </button>
-            </div>
-          </div>
+          <UserProfileView onClose={onClose} onSignOut={handleSignOut} />
         ) : (
           <>
             {/* Header intro */}
