@@ -4,10 +4,10 @@ import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import {
-  ArrowDownUp, ArrowLeft, ArrowRight, BadgeCheck, Bell, Building2, Calendar, Check, ChevronDown, ChevronLeft,
-  ChevronRight, Clock3, Compass, DollarSign, Heart, House, LandPlot,
-  Mail, MapPin, MessageCircle, Moon, Mountain, Phone, Search, Send, Share2, ShieldCheck,
-  SlidersHorizontal, Sun, Trees, User as UserIcon, Users, X,
+  ArrowDownUp, ArrowLeft, ArrowRight, BadgeCheck, Bell, Building2, Calendar, Camera, Check, ChevronDown, ChevronLeft,
+  ChevronRight, Clock3, Compass, DollarSign, Heart, House, LandPlot, Layers,
+  Mail, MapPin, Maximize2, MessageCircle, Moon, Mountain, Pause, Phone, Play, RotateCcw, RotateCw, Satellite, Search, Send, Share2, ShieldCheck,
+  SlidersHorizontal, Sun, Trees, User as UserIcon, Users, Video, Volume2, VolumeX, X,
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import { categories, cities, properties } from './data/properties'
@@ -598,11 +598,36 @@ function SunsetIcon() { return <span className="sunset-icon">☼</span> }
 
 function ResultsMap({ listings }: { listings: Property[] }) {
   const [selected, setSelected] = useState<Property | null>(null)
+  const [zoom, setZoom] = useState(8)
+  const mapLayer = useAppStore((state) => state.mapLayer)
+  const setMapLayer = useAppStore((state) => state.setMapLayer)
   const navigate = useNavigate()
-  return <div className="results-map-wrap">
-    <MapCanvas listings={listings} onSelect={setSelected} />
-    {selected && <div className="map-preview"><button className="preview-close" onClick={() => setSelected(null)} aria-label="Close property preview"><X size={15} /></button><button className="map-preview-main" onClick={() => navigate(`/property/${selected.id}`)}><img src={selected.images[0]} alt="" /><span><b>{formatPrice(selected.price)}</b><strong>{selected.title}</strong><small>{selected.acres} acres · {selected.city}, AZ</small></span><ChevronRight size={18} /></button></div>}
-  </div>
+  return (
+    <div className="results-map-wrap">
+      <MapCanvas listings={listings} onSelect={setSelected} zoom={zoom} />
+      <MapLayerToggle value={mapLayer} onChange={setMapLayer} />
+      <div className="map-zoom-controls">
+        <button aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(16, value + 1))}>+</button>
+        <button aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(4, value - 1))}>−</button>
+      </div>
+      {selected && (
+        <div className="map-preview">
+          <button className="preview-close" onClick={() => setSelected(null)} aria-label="Close property preview">
+            <X size={15} />
+          </button>
+          <button className="map-preview-main" onClick={() => navigate(`/property/${selected.id}`)}>
+            <img src={selected.images[0]} alt="" />
+            <span>
+              <b>{formatPrice(selected.price)}</b>
+              <strong>{selected.title}</strong>
+              <small>{selected.acres} acres · {selected.city}, AZ{selected.video ? ' · ▶ Video' : ''}</small>
+            </span>
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function FilterSheet({ onClose, onApply }: { onClose: () => void; onApply: () => void }) {
@@ -686,6 +711,8 @@ function MapScreen() {
   const [bounds, setBounds] = useState<L.LatLngBounds | null>(null)
   const [areaListings, setAreaListings] = useState(properties)
   const [locationMessage, setLocationMessage] = useState('')
+  const mapLayer = useAppStore((state) => state.mapLayer)
+  const setMapLayer = useAppStore((state) => state.setMapLayer)
   const start = () => {
     const matches = bounds ? properties.filter((property) => bounds.contains([property.lat, property.lng])) : properties
     setAreaListings(matches)
@@ -703,19 +730,135 @@ function MapScreen() {
     )
   }
   return <div className="map-screen"><div className="map-screen-heading"><div><span className="welcome-kicker">A DIFFERENT PERSPECTIVE</span><h1>Map search</h1></div><button className="round-control" aria-label="Find my location" onClick={locate}><MapPin size={19} /></button></div>
-    <div className="map-canvas-wrap"><MapCanvas listings={searched ? areaListings : properties} onSelect={setSelected} center={center} zoom={zoom} onBoundsChange={setBounds} /><button className={`map-area-button ${searched ? 'searched' : ''}`} onClick={start}><Search size={15} />{searched ? 'Showing this area' : 'Search this area'}</button><div className="map-zoom-controls"><button aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(16, value + 1))}>+</button><button aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(4, value - 1))}>−</button></div>{locationMessage && <div className="map-location-message" role="status">{locationMessage}</div>}
-      {selected && <div className="map-preview"><button className="preview-close" onClick={() => setSelected(null)}><X size={15} /></button><button className="map-preview-main" onClick={() => navigate(`/property/${selected.id}`)}><img src={selected.images[0]} alt="" /><span><b>{formatPrice(selected.price)}</b><strong>{selected.title}</strong><small>{selected.acres} acres · {selected.city}, AZ</small></span><ChevronRight size={18} /></button></div>}
+    <div className="map-canvas-wrap">
+      <MapCanvas listings={searched ? areaListings : properties} onSelect={setSelected} center={center} zoom={zoom} onBoundsChange={setBounds} />
+      <MapLayerToggle value={mapLayer} onChange={setMapLayer} />
+      <button className={`map-area-button ${searched ? 'searched' : ''}`} onClick={start}><Search size={15} />{searched ? 'Showing this area' : 'Search this area'}</button>
+      <div className="map-zoom-controls"><button aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(16, value + 1))}>+</button><button aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(4, value - 1))}>−</button></div>
+      {locationMessage && <div className="map-location-message" role="status">{locationMessage}</div>}
+      {selected && <div className="map-preview"><button className="preview-close" onClick={() => setSelected(null)}><X size={15} /></button><button className="map-preview-main" onClick={() => navigate(`/property/${selected.id}`)}><img src={selected.images[0]} alt="" /><span><b>{formatPrice(selected.price)}</b><strong>{selected.title}</strong><small>{selected.acres} acres · {selected.city}, AZ{selected.video ? ' · ▶ Video' : ''}</small></span><ChevronRight size={18} /></button></div>}
     </div><div className="map-bottom-info"><div><strong>Southern Arizona</strong><span>{searched ? areaListings.length : properties.length} places in this area</span></div><button onClick={locate}><MapPin size={14} /> My location</button><button onClick={() => navigate('/search')}>View list <ArrowRight size={15} /></button></div>
   </div>
 }
 
-function MapCanvas({ listings, onSelect, center = [31.92, -110.1], zoom = 8, showOffice = false, onBoundsChange }: { listings: Property[]; onSelect?: (property: Property) => void; center?: [number, number]; zoom?: number; showOffice?: boolean; onBoundsChange?: (bounds: L.LatLngBounds) => void }) {
-  return <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} zoomControl={false} className="leaflet-map">
-    <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-    {listings.map((property) => <Marker key={property.id} position={[property.lat, property.lng]} icon={priceMarker(property.price)} eventHandlers={{ click: () => onSelect?.(property) }} />)}
-    {showOffice && <Marker position={center} icon={L.divIcon({ className: 'office-marker-icon', html: '<span class="office-marker-pin"></span>', iconSize: [24, 36], iconAnchor: [12, 36] })}><Popup><strong>Arizona Life Homes and Land</strong><br />225 N. Frontage Rd., Suite 107<br />Pearce, AZ 85625</Popup></Marker>}
-    <MapResizer /><MapViewport center={center} zoom={zoom} /><MapBoundsReporter onBoundsChange={onBoundsChange} />
-  </MapContainer>
+function MapLayerToggle({
+  value,
+  onChange,
+  className = '',
+}: {
+  value: 'street' | 'satellite'
+  onChange: (layer: 'street' | 'satellite') => void
+  className?: string
+}) {
+  return (
+    <div className={`map-layer-toggle ${className}`} role="group" aria-label="Map view mode">
+      <button
+        type="button"
+        className={`layer-option ${value === 'street' ? 'active' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          onChange('street')
+        }}
+        aria-pressed={value === 'street'}
+        title="Standard street map"
+      >
+        <Layers size={13} />
+        <span>Map</span>
+      </button>
+      <button
+        type="button"
+        className={`layer-option ${value === 'satellite' ? 'active' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          onChange('satellite')
+        }}
+        aria-pressed={value === 'satellite'}
+        title="Satellite aerial imagery"
+      >
+        <Satellite size={13} />
+        <span>Satellite</span>
+      </button>
+    </div>
+  )
+}
+
+function MapCanvas({
+  listings,
+  onSelect,
+  center = [31.92, -110.1],
+  zoom = 8,
+  showOffice = false,
+  onBoundsChange,
+  layer,
+}: {
+  listings: Property[]
+  onSelect?: (property: Property) => void
+  center?: [number, number]
+  zoom?: number
+  showOffice?: boolean
+  onBoundsChange?: (bounds: L.LatLngBounds) => void
+  layer?: 'street' | 'satellite'
+}) {
+  const storeMapLayer = useAppStore((state) => state.mapLayer)
+  const activeLayer = layer ?? storeMapLayer
+
+  return (
+    <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} zoomControl={false} className="leaflet-map">
+      {activeLayer === 'satellite' ? (
+        <>
+          <TileLayer
+            key="esri-satellite"
+            attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+          />
+          <TileLayer
+            key="esri-boundaries"
+            url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+            zIndex={10}
+          />
+        </>
+      ) : (
+        <TileLayer
+          key="osm-street"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+        />
+      )}
+      {listings.map((property) => (
+        <Marker
+          key={property.id}
+          position={[property.lat, property.lng]}
+          icon={priceMarker(property.price)}
+          eventHandlers={{ click: () => onSelect?.(property) }}
+        />
+      ))}
+      {showOffice && (
+        <Marker
+          position={center}
+          icon={L.divIcon({
+            className: 'office-marker-icon',
+            html: '<span class="office-marker-pin"></span>',
+            iconSize: [24, 36],
+            iconAnchor: [12, 36],
+          })}
+        >
+          <Popup>
+            <strong>Arizona Life Homes and Land</strong>
+            <br />
+            225 N. Frontage Rd., Suite 107
+            <br />
+            Pearce, AZ 85625
+          </Popup>
+        </Marker>
+      )}
+      <MapResizer />
+      <MapViewport center={center} zoom={zoom} />
+      <MapBoundsReporter onBoundsChange={onBoundsChange} />
+    </MapContainer>
+  )
 }
 function MapResizer() {
   const map = useMap()
@@ -753,11 +896,27 @@ function priceMarker(price: number) {
   return L.divIcon({ className: 'price-marker-icon', html: `<span class="price-marker">${label}</span>`, iconSize: [66, 32], iconAnchor: [33, 32] })
 }
 
+function formatVideoTime(seconds: number) {
+  if (isNaN(seconds) || seconds < 0) return '0:00'
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${s < 10 ? '0' : ''}${s}`
+}
+
 function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => void; onMessage: () => void }) {
   const { id } = useParams()
   const property = properties.find((item) => item.id === id) || properties[0]
+  const [mediaTab, setMediaTab] = useState<'photos' | 'video'>('photos')
   const [imageIndex, setImageIndex] = useState(0)
   const [showGallery, setShowGallery] = useState(false)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+  const [isVideoMuted, setIsVideoMuted] = useState(true)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [videoDuration, setVideoDuration] = useState(45)
+  const [showControls, setShowControls] = useState(true)
+  const hideControlsTimerRef = useRef<number | null>(null)
+  const isSeekingRef = useRef(false)
+  const detailVideoRef = useRef<HTMLVideoElement>(null)
   const [down, setDown] = useState('20')
   const [rate, setRate] = useState('6.5')
   const [term, setTerm] = useState('30')
@@ -765,74 +924,493 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
   const [showMore, setShowMore] = useState(false)
   const saved = useAppStore((state) => state.savedIds.includes(property.id))
   const toggleSaved = useAppStore((state) => state.toggleSaved)
+  const mapLayer = useAppStore((state) => state.mapLayer)
+  const setMapLayer = useAppStore((state) => state.setMapLayer)
   const navigate = useNavigate()
+
+  const [prevPropId, setPrevPropId] = useState(property.id)
+  if (property.id !== prevPropId) {
+    setPrevPropId(property.id)
+    setImageIndex(0)
+    setMediaTab('photos')
+    setIsVideoPlaying(false)
+    setCurrentTime(0)
+    setShowControls(true)
+  }
+
+  const cancelControlsHide = useCallback(() => {
+    if (hideControlsTimerRef.current) {
+      window.clearTimeout(hideControlsTimerRef.current)
+      hideControlsTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleControlsHide = useCallback(() => {
+    cancelControlsHide()
+    if (detailVideoRef.current && !detailVideoRef.current.paused && !isSeekingRef.current) {
+      hideControlsTimerRef.current = window.setTimeout(() => {
+        if (!isSeekingRef.current && detailVideoRef.current && !detailVideoRef.current.paused) {
+          setShowControls(false)
+        }
+      }, 3000)
+    }
+  }, [cancelControlsHide])
+
+  useEffect(() => {
+    cancelControlsHide()
+    return () => {
+      cancelControlsHide()
+    }
+  }, [property.id, cancelControlsHide])
+
   const monthly = useMemo(() => {
     const principal = property.price * (1 - Number(down) / 100)
     const monthlyRate = Number(rate) / 1200
     const payments = Number(term) * 12
     return monthlyRate ? principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -payments)) : principal / payments
   }, [down, property.price, rate, term])
-  const galleryMove = (step: number) => setImageIndex((value) => (value + step + property.images.length) % property.images.length)
-  return <div className="detail-screen">
-    <div className="detail-nav">
-      <button className="detail-back-btn" onClick={() => navigate(-1)}><ArrowLeft size={17} /> Back</button>
-      <span>PROPERTY DETAILS</span>
-      <div className="detail-nav-actions">
+
+  const propertyVideo = property.video || {
+    url: '/videos/drone-tour.mp4',
+    title: `Aerial Drone Tour · ${property.title}`,
+    duration: '0:45',
+    poster: property.images[0],
+  }
+
+  const totalMediaItems = property.images.length + 1
+  const isVideoSlide = imageIndex === property.images.length
+
+  const galleryMove = (step: number) => {
+    setImageIndex((value) => (value + step + totalMediaItems) % totalMediaItems)
+  }
+
+  const handleVideoContainerClick = () => {
+    if (!showControls) {
+      setShowControls(true)
+      scheduleControlsHide()
+    } else {
+      if (detailVideoRef.current && !detailVideoRef.current.paused) {
+        setShowControls(false)
+        cancelControlsHide()
+      }
+    }
+  }
+
+  const handleToggleVideoPlay = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    if (!detailVideoRef.current) return
+    if (detailVideoRef.current.paused) {
+      detailVideoRef.current.play().then(() => {
+        setIsVideoPlaying(true)
+        setShowControls(true)
+        scheduleControlsHide()
+      }).catch(() => {})
+    } else {
+      detailVideoRef.current.pause()
+      setIsVideoPlaying(false)
+      setShowControls(true)
+      cancelControlsHide()
+    }
+  }
+
+  const handleToggleVideoMute = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!detailVideoRef.current) return
+    detailVideoRef.current.muted = !isVideoMuted
+    setIsVideoMuted(!isVideoMuted)
+    setShowControls(true)
+    scheduleControlsHide()
+  }
+
+  const handleTimeUpdate = () => {
+    if (!isSeekingRef.current && detailVideoRef.current) {
+      setCurrentTime(detailVideoRef.current.currentTime)
+    }
+  }
+
+  const handleLoadedMetadata = () => {
+    if (detailVideoRef.current && detailVideoRef.current.duration) {
+      setVideoDuration(detailVideoRef.current.duration)
+    }
+  }
+
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value)
+    setCurrentTime(newTime)
+    if (detailVideoRef.current) {
+      detailVideoRef.current.currentTime = newTime
+    }
+  }
+
+  const handleSeekPointerDown = () => {
+    isSeekingRef.current = true
+    setShowControls(true)
+    cancelControlsHide()
+  }
+
+  const handleSeekPointerUp = () => {
+    isSeekingRef.current = false
+    if (detailVideoRef.current) {
+      detailVideoRef.current.currentTime = currentTime
+    }
+    scheduleControlsHide()
+  }
+
+  const handleSkip = (seconds: number) => {
+    if (!detailVideoRef.current) return
+    const target = Math.max(0, Math.min(videoDuration || 45, detailVideoRef.current.currentTime + seconds))
+    detailVideoRef.current.currentTime = target
+    setCurrentTime(target)
+    setShowControls(true)
+    scheduleControlsHide()
+  }
+
+  return (
+    <div className="detail-screen">
+      <div className="detail-nav">
+        <button className="detail-back-btn" onClick={() => navigate(-1)}><ArrowLeft size={17} /> Back</button>
+        <span>PROPERTY DETAILS</span>
+        <div className="detail-nav-actions">
+          <button
+            className={`detail-nav-btn ${saved ? 'is-saved' : ''}`}
+            aria-label={saved ? 'Remove from saved' : 'Save property'}
+            title={saved ? 'Remove from saved' : 'Save property'}
+            onClick={() => toggleSaved(property.id)}
+          >
+            <Heart size={17} fill={saved ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            className="detail-nav-btn"
+            aria-label="Share property"
+            title="Share property"
+            onClick={() => onNotify('Property link copied')}
+          >
+            <Share2 size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Media Switcher: Photos vs Video Tour */}
+      <div className="detail-media-switcher">
         <button
-          className={`detail-nav-btn ${saved ? 'is-saved' : ''}`}
-          aria-label={saved ? 'Remove from saved' : 'Save property'}
-          title={saved ? 'Remove from saved' : 'Save property'}
-          onClick={() => toggleSaved(property.id)}
+          className={`media-switcher-btn ${mediaTab === 'photos' ? 'active' : ''}`}
+          onClick={() => setMediaTab('photos')}
         >
-          <Heart size={17} fill={saved ? 'currentColor' : 'none'} />
+          <Camera size={13} />
+          <span>Photos ({property.images.length})</span>
         </button>
         <button
-          className="detail-nav-btn"
-          aria-label="Share property"
-          title="Share property"
-          onClick={() => onNotify('Property link copied')}
+          className={`media-switcher-btn ${mediaTab === 'video' ? 'active' : ''}`}
+          onClick={() => {
+            setMediaTab('video')
+            setShowControls(true)
+            window.setTimeout(() => {
+              detailVideoRef.current?.play().then(() => {
+                setIsVideoPlaying(true)
+                scheduleControlsHide()
+              }).catch(() => {})
+            }, 100)
+          }}
         >
-          <Share2 size={16} />
+          <Play size={12} fill={mediaTab === 'video' ? 'currentColor' : 'none'} />
+          <span>Aerial Video Tour ({propertyVideo.duration})</span>
         </button>
       </div>
-    </div>
-    <div className="gallery" onTouchStart={(event) => { (event.currentTarget as HTMLDivElement).dataset.startX = String(event.touches[0].clientX) }} onTouchEnd={(event) => { const startX = Number((event.currentTarget as HTMLDivElement).dataset.startX || 0); const diff = event.changedTouches[0].clientX - startX; if (Math.abs(diff) > 40) galleryMove(diff > 0 ? -1 : 1) }}>
-      <img src={property.images[imageIndex]} alt={property.title} onClick={() => setShowGallery(true)} />
-      <div className="gallery-top"><span className="sale-ribbon">FOR SALE</span><span>{imageIndex + 1} / {property.images.length}</span></div>
-      <button className="gallery-arrow left" onClick={() => galleryMove(-1)} aria-label="Previous image"><ChevronLeft /></button><button className="gallery-arrow right" onClick={() => galleryMove(1)} aria-label="Next image"><ChevronRight /></button>
-      <div className="gallery-dots">{property.images.map((image, index) => <button key={image} className={index === imageIndex ? 'active' : ''} onClick={() => setImageIndex(index)} aria-label={`View image ${index + 1}`} />)}</div>
-    </div>
-    <div className="detail-content">
-      <div className="detail-price-row"><strong>{formatPrice(property.price)}</strong><span className="status-chip"><i /> Active</span></div>
-      <h1>{property.title}</h1>
-      <div className="detail-meta"><span><Trees size={17} />{property.acres} acres</span><span><span className="meta-dot" /> MLS #{property.mls}</span></div>
-      <div className="detail-address"><MapPin size={17} />{property.address}</div>
-      <div className="detail-divider" />
-      <h2 className="detail-section-title">The details</h2>
-      <div className="facts-grid"><Fact icon={<LandPlot />} label="Property size" value={`${property.acres} acres`} /><Fact icon={<Compass />} label="Property type" value={property.type} /><Fact icon={<MapPin />} label="County" value={`${property.county} County`} /><Fact icon={<Building2 />} label="Location" value={`${property.city}, AZ`} /></div>
-      <h2 className="detail-section-title">Highlights</h2>
-      <ul className="detail-feature-list">{property.features.map((feature) => <li key={feature}><span><Check size={14} /></span>{feature}</li>)}</ul>
-      <h2 className="detail-section-title">About this place</h2>
-      <p className="detail-description">{property.description}{showMore && ' Enjoy the freedom of open land and the beauty of Arizona’s unique landscapes. Contact our local team for more information or to arrange a visit.'}</p>
-      <button className="read-more" onClick={() => setShowMore((value) => !value)}>{showMore ? 'Read less' : 'Read more'} <ChevronDown size={15} /></button>
-      <div className="detail-cta">
-        <button className="cta-call" onClick={() => onNotify('Calling +1 (520) 403-3903…')}><Phone size={16} /> Call</button>
-        <button className="cta-message" onClick={onMessage}><MessageCircle size={16} /> Message</button>
-        <button className="cta-showing" onClick={() => navigate('/contact')}><Calendar size={16} /> Schedule a meeting</button>
+
+      {/* Media Viewer Frame */}
+      {mediaTab === 'photos' ? (
+        <div
+          className="gallery"
+          onTouchStart={(event) => { (event.currentTarget as HTMLDivElement).dataset.startX = String(event.touches[0].clientX) }}
+          onTouchEnd={(event) => {
+            const startX = Number((event.currentTarget as HTMLDivElement).dataset.startX || 0);
+            const diff = event.changedTouches[0].clientX - startX;
+            if (Math.abs(diff) > 40) galleryMove(diff > 0 ? -1 : 1)
+          }}
+        >
+          <img
+            src={property.images[imageIndex < property.images.length ? imageIndex : 0]}
+            alt={property.title}
+            onClick={() => setShowGallery(true)}
+          />
+          <div className="gallery-top">
+            <span className="sale-ribbon">FOR SALE</span>
+            <span>{imageIndex < property.images.length ? imageIndex + 1 : 1} / {property.images.length}</span>
+          </div>
+          <button className="gallery-arrow left" onClick={() => galleryMove(-1)} aria-label="Previous image"><ChevronLeft /></button>
+          <button className="gallery-arrow right" onClick={() => galleryMove(1)} aria-label="Next image"><ChevronRight /></button>
+          <div className="gallery-dots">
+            {property.images.map((image, index) => (
+              <button
+                key={image}
+                className={index === imageIndex ? 'active' : ''}
+                onClick={() => setImageIndex(index)}
+                aria-label={`View image ${index + 1}`}
+              />
+            ))}
+          </div>
+          <button
+            className="detail-floating-video-btn"
+            onClick={() => {
+              setMediaTab('video')
+              setShowControls(true)
+              window.setTimeout(() => {
+                detailVideoRef.current?.play().then(() => {
+                  setIsVideoPlaying(true)
+                  scheduleControlsHide()
+                }).catch(() => {})
+              }, 100)
+            }}
+          >
+            <Play size={12} fill="currentColor" /> Watch Video Tour ({propertyVideo.duration})
+          </button>
+        </div>
+      ) : (
+        <div
+          className={`gallery gallery--video ${!showControls ? 'controls-hidden' : ''}`}
+          onClick={handleVideoContainerClick}
+        >
+          <video
+            ref={detailVideoRef}
+            src={propertyVideo.url}
+            poster={propertyVideo.poster || property.images[0]}
+            playsInline
+            loop
+            muted={isVideoMuted}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onPlay={() => {
+              setIsVideoPlaying(true)
+              setShowControls(true)
+              scheduleControlsHide()
+            }}
+            onPause={() => {
+              setIsVideoPlaying(false)
+              setShowControls(true)
+              cancelControlsHide()
+            }}
+            className="detail-video-elem"
+          />
+          <div className="video-overlay-gradient" />
+          <div className="gallery-top">
+            <span className="sale-ribbon">4K AERIAL TOUR</span>
+            <span className="video-duration-pill">{propertyVideo.duration}</span>
+          </div>
+          <button
+            className={`detail-play-center-btn ${isVideoPlaying ? 'is-playing' : ''}`}
+            onClick={(e) => { e.stopPropagation(); handleToggleVideoPlay(); }}
+            aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
+          >
+            {isVideoPlaying ? <Pause size={22} /> : <Play size={22} fill="currentColor" />}
+          </button>
+
+          {/* Bottom Dock: Seekbar and Controls */}
+          <div
+            className="detail-video-dock"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowControls(true)
+              scheduleControlsHide()
+            }}
+          >
+            <div className="video-seek-bar-row">
+              <span className="video-time-label">{formatVideoTime(currentTime)}</span>
+              <div className="video-seek-track-wrapper">
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration || 45}
+                  step="0.1"
+                  value={currentTime}
+                  onChange={handleSeekChange}
+                  onPointerDown={handleSeekPointerDown}
+                  onPointerUp={handleSeekPointerUp}
+                  className="video-seek-input"
+                  aria-label="Seek video position"
+                />
+                <div
+                  className="video-seek-progress"
+                  style={{ width: `${Math.min(100, Math.max(0, (currentTime / (videoDuration || 45)) * 100))}%` }}
+                />
+              </div>
+              <span className="video-time-label">{formatVideoTime(videoDuration || 45)}</span>
+            </div>
+
+            <div className="video-controls-action-bar">
+              <div className="controls-group-left">
+                <button
+                  className="video-action-icon-btn"
+                  onClick={handleToggleVideoPlay}
+                  aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
+                >
+                  {isVideoPlaying ? <Pause size={15} /> : <Play size={15} fill="currentColor" />}
+                </button>
+                <button
+                  className="video-action-icon-btn"
+                  onClick={() => handleSkip(-5)}
+                  aria-label="Skip back 5 seconds"
+                  title="Rewind 5s"
+                >
+                  <RotateCcw size={13} />
+                </button>
+                <button
+                  className="video-action-icon-btn"
+                  onClick={() => handleSkip(5)}
+                  aria-label="Skip forward 5 seconds"
+                  title="Forward 5s"
+                >
+                  <RotateCw size={13} />
+                </button>
+                <button
+                  className="video-action-icon-btn"
+                  onClick={handleToggleVideoMute}
+                  aria-label={isVideoMuted ? 'Unmute' : 'Mute'}
+                >
+                  {isVideoMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                </button>
+              </div>
+
+              <div className="controls-group-right">
+                <span className="video-hd-chip">4K TOUR</span>
+                <button
+                  className="video-action-icon-btn"
+                  onClick={() => {
+                    setImageIndex(property.images.length)
+                    setShowGallery(true)
+                  }}
+                  aria-label="Expand fullscreen"
+                  title="Fullscreen"
+                >
+                  <Maximize2 size={15} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="detail-content">
+        <div className="detail-price-row"><strong>{formatPrice(property.price)}</strong><span className="status-chip"><i /> Active</span></div>
+        <h1>{property.title}</h1>
+        <div className="detail-meta"><span><Trees size={17} />{property.acres} acres</span><span><span className="meta-dot" /> MLS #{property.mls}</span></div>
+        <div className="detail-address"><MapPin size={17} />{property.address}</div>
+        <div className="detail-divider" />
+
+        {/* Video & Aerial Tour Feature Card */}
+        <div className="detail-video-feature-card">
+          <div className="detail-video-header">
+            <div className="video-badge-icon"><Video size={18} /></div>
+            <div>
+              <span className="welcome-kicker">AERIAL & GROUND COVERAGE</span>
+              <h3 className="detail-video-name">{propertyVideo.title}</h3>
+            </div>
+          </div>
+          <p className="detail-video-summary">
+            Take a virtual flight over {property.acres} acres of {property.city} landscape. Inspect terrain contours, natural vegetation, boundary perimeters, and surrounding Arizona mountain vistas in high definition.
+          </p>
+          <div className="video-feature-tags">
+            <span><Check size={13} /> Surveyed Boundary</span>
+            <span><Check size={13} /> Road & Utility Access</span>
+            <span><Check size={13} /> Mountain Vistas</span>
+            <span><Check size={13} /> Terrain Contours</span>
+          </div>
+          <button
+            className="detail-launch-video-btn"
+            onClick={() => {
+              setMediaTab('video')
+              setShowControls(true)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+              window.setTimeout(() => {
+                detailVideoRef.current?.play().then(() => {
+                  setIsVideoPlaying(true)
+                  scheduleControlsHide()
+                }).catch(() => {})
+              }, 300)
+            }}
+          >
+            <Play size={14} fill="currentColor" /> Watch Aerial Video Tour ({propertyVideo.duration})
+          </button>
+        </div>
+
+        <h2 className="detail-section-title">The details</h2>
+        <div className="facts-grid"><Fact icon={<LandPlot />} label="Property size" value={`${property.acres} acres`} /><Fact icon={<Compass />} label="Property type" value={property.type} /><Fact icon={<MapPin />} label="County" value={`${property.county} County`} /><Fact icon={<Building2 />} label="Location" value={`${property.city}, AZ`} /></div>
+        <h2 className="detail-section-title">Highlights</h2>
+        <ul className="detail-feature-list">{property.features.map((feature) => <li key={feature}><span><Check size={14} /></span>{feature}</li>)}</ul>
+        <h2 className="detail-section-title">About this place</h2>
+        <p className="detail-description">{property.description}{showMore && ' Enjoy the freedom of open land and the beauty of Arizona’s unique landscapes. Contact our local team for more information or to arrange a visit.'}</p>
+        <button className="read-more" onClick={() => setShowMore((value) => !value)}>{showMore ? 'Read less' : 'Read more'} <ChevronDown size={15} /></button>
+        <div className="detail-cta">
+          <button className="cta-call" onClick={() => onNotify('Calling +1 (520) 403-3903…')}><Phone size={16} /> Call</button>
+          <button className="cta-message" onClick={onMessage}><MessageCircle size={16} /> Message</button>
+          <button className="cta-showing" onClick={() => navigate('/contact')}><Calendar size={16} /> Schedule a meeting</button>
+        </div>
+        <h2 className="detail-section-title">Explore the area</h2>
+        <div className="detail-map" onClick={() => navigate('/map')}>
+          <MapCanvas listings={[property]} center={[property.lat, property.lng]} zoom={11} />
+          <MapLayerToggle value={mapLayer} onChange={setMapLayer} className="detail-map-layer" />
+          <div className="map-label"><MapPin size={15} /> {property.city}, Arizona <ArrowRight size={14} /></div>
+        </div>
+        <div className="calculator-card"><button className="calculator-title" onClick={() => setShowCalc((value) => !value)}><span><span className="calculator-icon"><DollarSign size={17} /></span><span><b>Estimated monthly payment</b><small>A simple starting point</small></span></span><ChevronDown className={showCalc ? 'rotate-icon' : ''} size={19} /></button><div className="payment-amount">{formatPrice(Math.round(monthly))}<small>/mo</small></div>{showCalc && <div className="calculator-controls"><label>Down payment <select value={down} onChange={(event) => setDown(event.target.value)}><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="50">50%</option></select></label><label>Interest rate <input type="number" value={rate} min="0" step="0.1" onChange={(event) => setRate(event.target.value)} /></label><label>Loan term <select value={term} onChange={(event) => setTerm(event.target.value)}><option value="15">15 years</option><option value="20">20 years</option><option value="30">30 years</option></select></label><small>Estimate excludes taxes, insurance, and fees.</small></div>}</div>
+        <div className="similar-section">
+          <SectionHeading kicker="KEEP EXPLORING" title="Similar places" />
+          <SlidableScroller ariaLabel="Similar places slider">
+            {properties.filter((item) => item.id !== property.id).slice(0, 3).map((item) => <PropertyCard key={item.id} property={item} compact />)}
+          </SlidableScroller>
+        </div>
       </div>
-      <h2 className="detail-section-title">Explore the area</h2>
-      <div className="detail-map" onClick={() => navigate('/map')}><MapCanvas listings={[property]} /><div className="map-label"><MapPin size={15} /> {property.city}, Arizona <ArrowRight size={14} /></div></div>
-      <div className="calculator-card"><button className="calculator-title" onClick={() => setShowCalc((value) => !value)}><span><span className="calculator-icon"><DollarSign size={17} /></span><span><b>Estimated monthly payment</b><small>A simple starting point</small></span></span><ChevronDown className={showCalc ? 'rotate-icon' : ''} size={19} /></button><div className="payment-amount">{formatPrice(Math.round(monthly))}<small>/mo</small></div>{showCalc && <div className="calculator-controls"><label>Down payment <select value={down} onChange={(event) => setDown(event.target.value)}><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="50">50%</option></select></label><label>Interest rate <input type="number" value={rate} min="0" step="0.1" onChange={(event) => setRate(event.target.value)} /></label><label>Loan term <select value={term} onChange={(event) => setTerm(event.target.value)}><option value="15">15 years</option><option value="20">20 years</option><option value="30">30 years</option></select></label><small>Estimate excludes taxes, insurance, and fees.</small></div>}</div>
-      {/* <div className="broker-card"><div className="broker-avatar">RF</div><div><span className="welcome-kicker">YOUR LOCAL GUIDE</span><strong>Richard “Rick” Frank</strong><small>Arizona Life Homes and Land</small></div><button onClick={() => onNotify('Calling Rick Frank…')} aria-label="Call Rick"><Phone size={17} /></button></div> */}
-      <div className="similar-section">
-        <SectionHeading kicker="KEEP EXPLORING" title="Similar places" />
-        <SlidableScroller ariaLabel="Similar places slider">
-          {properties.filter((item) => item.id !== property.id).slice(0, 3).map((item) => <PropertyCard key={item.id} property={item} compact />)}
-        </SlidableScroller>
-      </div>
+      <AnimatePresence>
+        {showGallery && (
+          <motion.div
+            className="gallery-viewer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowGallery(false)}
+          >
+            <button className="viewer-close"><X /></button>
+            <button
+              className="viewer-arrow left"
+              onClick={(event) => {
+                event.stopPropagation()
+                galleryMove(-1)
+              }}
+            >
+              <ChevronLeft />
+            </button>
+            {isVideoSlide ? (
+              <div className="viewer-video-container" onClick={(e) => e.stopPropagation()}>
+                <video
+                  src={propertyVideo.url}
+                  poster={propertyVideo.poster || property.images[0]}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="viewer-video-element"
+                />
+                <span className="viewer-caption">
+                  <Play size={12} fill="currentColor" /> {propertyVideo.title} ({propertyVideo.duration})
+                </span>
+              </div>
+            ) : (
+              <>
+                <img src={property.images[imageIndex < property.images.length ? imageIndex : 0]} alt={property.title} />
+                <span>{imageIndex + 1} / {property.images.length}</span>
+              </>
+            )}
+            <button
+              className="viewer-arrow right"
+              onClick={(event) => {
+                event.stopPropagation()
+                galleryMove(1)
+              }}
+            >
+              <ChevronRight />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-    <AnimatePresence>{showGallery && <motion.div className="gallery-viewer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowGallery(false)}><button className="viewer-close"><X /></button><button className="viewer-arrow left" onClick={(event) => { event.stopPropagation(); galleryMove(-1) }}><ChevronLeft /></button><img src={property.images[imageIndex]} alt={property.title} /><button className="viewer-arrow right" onClick={(event) => { event.stopPropagation(); galleryMove(1) }}><ChevronRight /></button><span>{imageIndex + 1} / {property.images.length}</span></motion.div>}</AnimatePresence>
-  </div>
+  )
 }
 
 function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {

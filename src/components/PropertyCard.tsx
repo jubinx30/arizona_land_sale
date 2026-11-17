@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Heart, ImageOff, MapPin, Share2, Trees } from 'lucide-react'
+import { Camera, Check, Heart, ImageOff, MapPin, Play, Share2, Trees } from 'lucide-react'
 import type { Property } from '../data/properties'
 import { useAppStore } from '../store/useAppStore'
 
@@ -33,6 +33,16 @@ export default function PropertyCard({ property, compact = false }: Props) {
         <span className="sale-ribbon">FOR SALE</span>
         <span className="image-category">{property.type === 'Land' ? 'Land for Sale' : `${property.type} Property`}</span>
         <div className="price-pill">{formatPrice(property.price)}</div>
+        <div className="card-media-tags">
+          <span className="card-media-tag" title={`${property.images.length} photos`}>
+            <Camera size={11} /> {property.images.length}
+          </span>
+          {property.video && (
+            <span className="card-media-tag card-media-tag--video" title="Video tour available">
+              <Play size={10} fill="currentColor" /> Tour
+            </span>
+          )}
+        </div>
         <div className="card-actions">
           <button className={`icon-button ${saved ? 'is-saved' : ''}`} aria-label={saved ? 'Remove from saved' : 'Save property'} onClick={(event) => { event.stopPropagation(); toggleSaved(property.id) }}><Heart size={17} fill={saved ? 'currentColor' : 'none'} /></button>
           <button className="icon-button" aria-label="Share property" onClick={share}><Share2 size={16} /></button>

@@ -29,6 +29,8 @@ export type AppNotification = {
   propertyId?: string
 }
 
+export type MapLayer = 'street' | 'satellite'
+
 const initialNotifications: AppNotification[] = [
   {
     id: 'benson-new-listing',
@@ -62,6 +64,9 @@ type AppState = {
   filters: Filters
   recentSearches: string[]
   notifications: AppNotification[]
+  mapLayer: MapLayer
+  setMapLayer: (mapLayer: MapLayer) => void
+  toggleMapLayer: () => void
   darkMode: boolean
   toggleDarkMode: () => void
   setDarkMode: (enabled: boolean) => void
@@ -91,6 +96,9 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   filters: initialFilters,
   recentSearches: [],
   notifications: initialNotifications,
+  mapLayer: 'street',
+  setMapLayer: (mapLayer) => set({ mapLayer }),
+  toggleMapLayer: () => set((state) => ({ mapLayer: state.mapLayer === 'satellite' ? 'street' : 'satellite' })),
   darkMode: typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-color-scheme: dark)')?.matches),
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
   setDarkMode: (darkMode) => set({ darkMode }),

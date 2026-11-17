@@ -1,3 +1,10 @@
+export type PropertyVideo = {
+  url: string
+  title: string
+  duration: string
+  poster?: string
+}
+
 export type Property = {
   id: string
   price: number
@@ -11,11 +18,19 @@ export type Property = {
   features: string[]
   description: string
   images: string[]
+  video?: PropertyVideo
   lat: number
   lng: number
 }
 
 const image = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1000&q=85`
+
+const defaultVideo = (title: string, posterId: string): PropertyVideo => ({
+  url: '/videos/drone-tour.mp4',
+  title: `Aerial Drone Tour · ${title}`,
+  duration: '0:45',
+  poster: image(posterId),
+})
 
 export const properties: Property[] = [
   {
@@ -28,6 +43,7 @@ export const properties: Property[] = [
       image('photo-1464822759023-fed622ff2c3b'),
       image('photo-1705869340514-c3512ede4311'),
     ],
+    video: defaultVideo('Dragoon Mountain Ranch', 'photo-1602138759009-ca3386c95619'),
     lat: 31.909, lng: -110.111,
   },
   {
@@ -40,6 +56,7 @@ export const properties: Property[] = [
       image('photo-1510798831971-661eb04b3739'),
       image('photo-1558591710-4b4a1ae0f04d'),
     ],
+    video: defaultVideo('Benson Homestead & Pasture', 'photo-1500382017468-9049fed747ef'),
     lat: 31.967, lng: -110.296,
   },
   {
@@ -52,6 +69,7 @@ export const properties: Property[] = [
       image('photo-1470770841072-f978cf4d019e'),
       image('photo-1528722828814-77b9b83aafb2'),
     ],
+    video: defaultVideo('Willcox Open Range', 'photo-1509316785289-025f5b846b35'),
     lat: 32.252, lng: -109.832,
   },
   {
@@ -64,6 +82,7 @@ export const properties: Property[] = [
       image('photo-1762572809053-5a20b5a904cb'),
       image('photo-1518457607834-6e8d80c183c5'),
     ],
+    video: defaultVideo('Chiricahua Foothills Homestead', 'photo-1773597920797-59503c3dd89c'),
     lat: 31.867, lng: -109.825,
   },
   {
@@ -76,6 +95,7 @@ export const properties: Property[] = [
       image('photo-1516214104703-d870798883c5'),
       image('photo-1773597920610-def0e2ce29d0'),
     ],
+    video: defaultVideo('Elfrida Open Range', 'photo-1792378312222-c5f48bd2f9f2'),
     lat: 31.702, lng: -109.694,
   },
   {
@@ -88,6 +108,7 @@ export const properties: Property[] = [
       image('photo-1579033461380-adb47c3eb938'),
       image('photo-1542224566-6e85f2e6772f'),
     ],
+    video: defaultVideo('Buildable Benson Acreage', 'photo-1688066521488-8d94f1b78cfd'),
     lat: 31.996, lng: -110.242,
   },
   {
@@ -100,6 +121,7 @@ export const properties: Property[] = [
       image('photo-1534067783941-51c9c23ecefd'),
       image('photo-1547036967-23d11aacaee0'),
     ],
+    video: defaultVideo('Dragoon Mountain Wildlife & Trails', 'photo-1770154874329-8ccef1b7f132'),
     lat: 31.879, lng: -110.154,
   },
   {
@@ -112,6 +134,7 @@ export const properties: Property[] = [
       image('photo-1649519604456-87671cdc599d'),
       image('photo-1755547721503-1c27d91058f3'),
     ],
+    video: defaultVideo('Wildcat Pl Boundary Parcel', 'photo-1762572810285-9f926f94aae1'),
     lat: 31.948, lng: -110.31,
   },
   {
@@ -124,6 +147,7 @@ export const properties: Property[] = [
       image('photo-1519681393784-d120267933ba'),
       image('photo-1737069418850-9b1a88e2cc76'),
     ],
+    video: defaultVideo('Panoramic Peak & Cochise Stronghold', 'photo-1549318558-02fe75fc51d2'),
     lat: 31.887, lng: -109.965,
   },
   {
@@ -136,6 +160,7 @@ export const properties: Property[] = [
       image('photo-1465256410760-10640339c72c'),
       image('photo-1579408795979-966a21467a34'),
     ],
+    video: defaultVideo('Dragoon Road Acreage Aerial', 'photo-1786246537683-d0e0f6bc93f2'),
     lat: 31.918, lng: -110.075,
   },
   {
@@ -148,6 +173,7 @@ export const properties: Property[] = [
       image('photo-1667262401773-6728506f9137'),
       image('photo-1748773944769-b9240c3e448d'),
     ],
+    video: defaultVideo('National Forest Boundary Drone Flight', 'photo-1694550180363-588984f3eb30'),
     lat: 31.856, lng: -110.138,
   },
   {
@@ -160,6 +186,7 @@ export const properties: Property[] = [
       image('photo-1779666281705-be5e5621eb19'),
       image('photo-1762572813885-7c865dfa2376'),
     ],
+    video: defaultVideo('Commercial Frontage & Corridor View', 'photo-1469854523086-cc02fe5d8800'),
     lat: 31.986, lng: -110.327,
   },
 ]
