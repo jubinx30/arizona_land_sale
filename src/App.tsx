@@ -41,6 +41,22 @@ const heroSlides = [
 const counties = ['Cochise', 'Pima', 'Graham', 'Santa Cruz']
 const featureOptions = ['Well', 'Gated community', 'Horses allowed', 'Mountain views', 'Near National Forest', 'Commercial potential', 'Owner financing']
 
+const partnerLogos = [
+  { name: 'United Country Real Estate', src: `${import.meta.env.BASE_URL}partners/UnitedCountry.png` },
+  { name: 'John Deere', src: `${import.meta.env.BASE_URL}partners/johndeere.png` },
+  { name: 'Land id', src: `${import.meta.env.BASE_URL}partners/landid.png` },
+  { name: 'UC Hunting Properties', src: `${import.meta.env.BASE_URL}partners/uchuntingproperties.png` },
+  { name: 'PotlatchDeltic', src: `${import.meta.env.BASE_URL}partners/potlatchdeltic.png` },
+  { name: 'Mineral Marketing', src: `${import.meta.env.BASE_URL}partners/MineralMarketing.png` },
+  { name: 'Global Auction Guide', src: `${import.meta.env.BASE_URL}partners/globalauctionguide.png` },
+  { name: 'HiBid', src: `${import.meta.env.BASE_URL}partners/hibid.png` },
+  { name: 'ReScore', src: `${import.meta.env.BASE_URL}partners/rescore.png` },
+  { name: 'REALTORS Land Institute', src: `${import.meta.env.BASE_URL}partners/RLI.png` },
+  { name: 'Ducks Unlimited', src: `${import.meta.env.BASE_URL}partners/DucksUnlimited.png` },
+  { name: 'Rocky Mountain Elk Foundation', src: `${import.meta.env.BASE_URL}partners/RMEF.png` },
+  { name: 'infoUSA', src: `${import.meta.env.BASE_URL}partners/infoUSA.png` },
+]
+
 function App() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -405,8 +421,33 @@ function Home() {
         </button>
       </SlidableScroller>
     </section>
+
+     <section className="promise-card">
+      <div className="promise-icon"><Compass size={21} /></div><div><span className="welcome-kicker">ROOTED HERE. READY TO HELP.</span><h3>Local knowledge.<br />A personal touch.</h3><p>We know this land, these communities, and what makes southern Arizona feel like home.</p><button onClick={() => navigate('/contact')}>Meet our local broker <ArrowRight size={15} /></button></div>
+    </section>
    
-    <section className="partner-section"><span className="welcome-kicker">GOOD COMPANY, GREAT PLACES</span><h3>Our trusted partners</h3><div className="partner-marquee"><div className="partner-track">{['MINERAL MARKETING', 'LAND id', 'JOHN DEERE', 'GLOBAL AUCTION GUIDE', 'ReScore', 'UC HUNTING PROPERTIES', 'MINERAL MARKETING', 'LAND id', 'JOHN DEERE'].map((partner, index) => <span key={`${partner}-${index}`}>{partner}</span>)}</div></div></section>
+    <section className="partner-section">
+      <span className="welcome-kicker">GOOD COMPANY, GREAT PLACES</span>
+      <h3>Our trusted partners</h3>
+      <div className="partner-marquee">
+        <div className="partner-track">
+          <div className="partner-track-group">
+            {partnerLogos.map((partner, index) => (
+              <div className="partner-logo-item" key={`${partner.name}-${index}`} title={partner.name}>
+                <img src={partner.src} alt={partner.name} className="partner-logo-img" loading="lazy" />
+              </div>
+            ))}
+          </div>
+          <div className="partner-track-group" aria-hidden="true">
+            {partnerLogos.map((partner, index) => (
+              <div className="partner-logo-item" key={`${partner.name}-dup-${index}`} title={partner.name}>
+                <img src={partner.src} alt="" className="partner-logo-img" loading="lazy" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section className="section-block type-section">
       <SectionHeading kicker="MAKE IT YOUR OWN" title="Find your kind of place" />
@@ -417,9 +458,7 @@ function Home() {
       </div>
     </section>
 
-    <section className="promise-card">
-      <div className="promise-icon"><Compass size={21} /></div><div><span className="welcome-kicker">ROOTED HERE. READY TO HELP.</span><h3>Local knowledge.<br />A personal touch.</h3><p>We know this land, these communities, and what makes southern Arizona feel like home.</p><button onClick={() => navigate('/contact')}>Meet your local broker <ArrowRight size={15} /></button></div>
-    </section>
+   
 
   </div>
 }
@@ -769,10 +808,11 @@ function Contact({ onNotify }: { onNotify: (value: string) => void }) {
     window.setTimeout(() => { setSending(false); setSuccess(true); onNotify('Your message is on its way!') }, 900)
   }
   return <div className="contact-screen">
-    <div className="contact-hero"><span className="welcome-kicker">WE’RE RIGHT HERE</span><h1>Let’s find your<br /><em>Arizona.</em></h1><p>Good conversations make great beginnings.</p><div className="contact-hero-lines"><span /><span /><span /></div></div>
     <div className="contact-content">
+      <div className="office-section"><span className="welcome-kicker">COME SAY HELLO</span><h2>Our location</h2><div className="office-card"><div className="office-card-top"><div className="office-logo">UC</div><div><strong>Arizona Life Homes and Land</strong><span>United Country Real Estate</span></div><span className="office-status"><i /> OPEN</span></div><div className="office-detail"><MapPin size={17} /><span>225 N. Frontage Rd., Suite 107<br />Pearce, AZ 85625</span></div><div className="office-detail"><Clock3 size={17} /><span>Monday – Friday<br />9:00 AM – 5:00 PM</span></div><div className="office-detail"><Users size={17} /><span>Broker: Richard (Rick) Frank</span></div><div className="office-contacts"><a href="tel:+15204033903"><Phone size={15} /> Call </a><a href="mailto:rick45ap@vtc.net"><Mail size={15} /> Email</a></div><a className="office-website" href="https://www.arizonahomesandlandsales.com" target="_blank" rel="noreferrer">Visit our website <ArrowRight size={14} /></a></div><div className="contact-map"><MapCanvas listings={[]} center={[31.9, -109.83]} zoom={13} showOffice /><div className="contact-map-label"><MapPin size={15} /> Pearce, Arizona</div></div><div className="broker-credit"><span>LOCAL HEART. COUNTRY ROOTS.</span><strong>Richard “Rick” Frank <i>·</i> Your Southern Arizona Broker</strong></div></div>
+
+    
       {success ? <div className="success-card"><span className="success-check"><Check size={28} /></span><span className="welcome-kicker">MESSAGE RECEIVED</span><h2>Thanks for reaching out.</h2><p>Rick will be in touch soon. In the meantime, imagine what’s possible.</p><button className="primary-button" onClick={() => { setSuccess(false); setFirst(''); setLast(''); setEmail(''); setPhone(''); setMessage(''); setConsent(false) }}>Send another message</button></div> : <form className="contact-form" onSubmit={submit} noValidate><span className="welcome-kicker">TELL US WHAT YOU’RE LOOKING FOR</span><h2>We’d love to hear from you.</h2><div className="form-row"><FormField label="First name" required error={errors.includes('first')}><input required aria-invalid={errors.includes('first')} value={first} onChange={(event) => setFirst(event.target.value)} placeholder="Your first name" /></FormField><FormField label="Last name" required error={errors.includes('last')}><input required aria-invalid={errors.includes('last')} value={last} onChange={(event) => setLast(event.target.value)} placeholder="Your last name" /></FormField></div><FormField label="Email address" required error={errors.includes('email')}><input required aria-invalid={errors.includes('email')} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></FormField><FormField label="Phone number"><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="(520) 555-0123" /></FormField><FormField label="How can we help?" required error={errors.includes('message')}><textarea required aria-invalid={errors.includes('message')} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Tell us a little about the place you’re looking for…" rows={4} /></FormField><label className={`consent-box ${errors.includes('consent') ? 'invalid' : ''}`}><input required aria-invalid={errors.includes('consent')} type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>I agree to be contacted about my inquiry. Reply STOP to opt out. See our <Link to="/info">Terms of Service</Link> and <Link to="/info">Privacy Policy</Link>.</span></label>{errors.length > 0 && <p className="form-error" role="alert">Please complete the required fields and consent.</p>}<button className="send-button" type="submit" disabled={sending}>{sending ? <><span className="spinner" /> Sending…</> : <>Send message <Send size={16} /></>}</button></form>}
-      <div className="office-section"><span className="welcome-kicker">COME SAY HELLO</span><h2>Our location</h2><div className="office-card"><div className="office-card-top"><div className="office-logo">UC</div><div><strong>Arizona Life Homes and Land</strong><span>United Country Real Estate</span></div><span className="office-status"><i /> OPEN</span></div><div className="office-detail"><MapPin size={17} /><span>225 N. Frontage Rd., Suite 107<br />Pearce, AZ 85625</span></div><div className="office-detail"><Clock3 size={17} /><span>Monday – Friday<br />9:00 AM – 5:00 PM</span></div><div className="office-detail"><Users size={17} /><span>Broker: Richard (Rick) Frank</span></div><div className="office-contacts"><a href="tel:+15204033903"><Phone size={15} /> Call office</a><a href="mailto:rick45ap@vtc.net"><Mail size={15} /> Email</a></div><a className="office-website" href="https://www.arizonahomesandlandsales.com" target="_blank" rel="noreferrer">Visit our website <ArrowRight size={14} /></a></div><div className="contact-map"><MapCanvas listings={[]} center={[31.9, -109.83]} zoom={13} showOffice /><div className="contact-map-label"><MapPin size={15} /> Pearce, Arizona</div></div><div className="broker-credit"><span>LOCAL HEART. COUNTRY ROOTS.</span><strong>Richard “Rick” Frank <i>·</i> Your Southern Arizona Broker</strong></div></div>
     </div>
   </div>
 }
