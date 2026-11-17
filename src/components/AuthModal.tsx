@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useAppStore, type User } from '../store/useAppStore'
 import UserProfileView from './UserProfileView'
+import ucLogo from '../assets/uc-logo.png'
 import './AuthModal.css'
 
 interface AuthModalProps {
@@ -190,7 +191,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         {/* Brand Banner */}
         <div className="auth-brand">
-          <div className="auth-uc-badge">UC</div>
+          <img src={ucLogo} alt="United Country Real Estate" className="auth-uc-badge" />
           <div className="auth-brand-text">
             <strong>ARIZONA LIFE</strong>
             <span>{currentUser ? 'CLIENT ACCOUNT & PROFILE' : 'HOMES & LAND · UNITED COUNTRY'}</span>

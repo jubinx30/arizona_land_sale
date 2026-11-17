@@ -80,14 +80,12 @@
 }
 
 .auth-uc-badge {
-  width: 30px;
-  height: 30px;
-  border: 1.5px solid var(--green, #1f7a54);
-  color: var(--green, #1f7a54);
-  font: 700 13px/27px 'Montserrat', sans-serif;
-  text-align: center;
-  letter-spacing: -0.5px;
-  border-radius: 4px;
+  height: 28px;
+  width: auto;
+  max-width: 68px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
 
 .auth-brand-text {
@@ -509,6 +507,10 @@
 .dark-mode .auth-brand-text strong,
 .dark-mode .auth-logged-in-view h2 {
   color: #edf2f7;
+}
+
+.dark-mode .auth-uc-badge {
+  filter: brightness(0) invert(1);
 }
 
 .dark-mode .auth-header p,
