@@ -50,7 +50,100 @@ export type AppNotification = {
   propertyId?: string
 }
 
+export type ListingReviewStatus = 'pending_review' | 'under_review' | 'approved' | 'rejected'
+
+export type UserPropertyListing = {
+  id: string
+  title: string
+  type: string
+  price: number
+  county: string
+  city: string
+  address: string
+  acres: number
+  bedrooms?: number
+  bathrooms?: number
+  sqft?: number
+  description: string
+  features: string[]
+  images: string[]
+  status: ListingReviewStatus
+  submittedAt: string
+  reviewedAt?: string
+  brokerNotes?: string
+  assignedBroker: string
+  sellerName: string
+  sellerEmail: string
+  sellerPhone: string
+  ownershipConfirmed: boolean
+  mlsNumber?: string
+}
+
+export type TeamApplication = {
+  id: string
+  fullName: string
+  email: string
+  phone: string
+  roleInterest: 'salesperson' | 'associate_broker' | 'student' | 'new_to_real_estate' | 'referral_partner'
+  licenseNumber?: string
+  experienceYears: string
+  targetTerritory: string
+  specialties: string[]
+  message: string
+  resumeName?: string
+  submittedAt: string
+  status: 'submitted' | 'under_broker_review' | 'interview_scheduled'
+  brokerFeedback?: string
+}
+
 export type MapLayer = 'street' | 'satellite'
+
+export const defaultUserPropertyListings: UserPropertyListing[] = [
+  {
+    id: 'prop-sample-dragoon-1',
+    title: '15.5-Acre High Desert Sanctuary & Mountain View Parcel',
+    type: 'Land',
+    price: 89500,
+    county: 'Cochise',
+    city: 'Saint David',
+    address: '4220 S Apache Sunrise Trail, Saint David, AZ 85630',
+    acres: 15.5,
+    description: 'Breathtaking 360-degree mountain vistas facing the Dragoon Mountains. Excellent build site with electric transformer nearby and high-producing water aquifer. Perfect for horse ranch, homestead, or off-grid living.',
+    features: ['Mountain views', 'Private well potential', 'Horses allowed', 'Electricity near lot', 'Survey completed', 'Owner financing'],
+    images: [
+      'https://images.unsplash.com/photo-1602138759009-ca3386c95619?auto=format&fit=crop&w=1000&q=85',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=85',
+      'https://images.unsplash.com/photo-1705869340514-c3512ede4311?auto=format&fit=crop&w=1000&q=85',
+    ],
+    status: 'under_review',
+    submittedAt: 'Today at 10:15 AM',
+    assignedBroker: 'Rick Frank, Designated Broker',
+    brokerNotes: 'Cochise County parcel #208-14-009 verified. Plat map and legal deed confirmed. Finalizing market valuation and listing package.',
+    sellerName: 'Sarah Miller',
+    sellerEmail: 'sarah.miller@example.com',
+    sellerPhone: '(602) 555-0142',
+    ownershipConfirmed: true,
+    mlsNumber: 'AZ-02034-PENDING',
+  },
+]
+
+export const defaultTeamApplications: TeamApplication[] = [
+  {
+    id: 'app-sample-1',
+    fullName: 'Sarah Miller',
+    email: 'sarah.miller@example.com',
+    phone: '(602) 555-0142',
+    roleInterest: 'salesperson',
+    licenseNumber: 'SA702914000',
+    experienceYears: '3 years',
+    targetTerritory: 'Cochise & Pima County',
+    specialties: ['Land & Acreage', 'Country Homes', 'Equestrian Properties'],
+    message: 'Passionate about Southern Arizona lifestyle, desert ecology, and helping buyers find rural land and homesteads. Looking to join Arizona Life Homes and Land under United Country branding.',
+    submittedAt: 'Yesterday',
+    status: 'under_broker_review',
+    brokerFeedback: 'Application received. Phone interview scheduled with Rick Frank for Thursday at 2:00 PM.',
+  },
+]
 
 const initialNotifications: AppNotification[] = [
   {
@@ -86,6 +179,8 @@ type AppState = {
   filters: Filters
   recentSearches: string[]
   notifications: AppNotification[]
+  userPropertyListings: UserPropertyListing[]
+  teamApplications: TeamApplication[]
   mapLayer: MapLayer
   setMapLayer: (mapLayer: MapLayer) => void
   toggleMapLayer: () => void
@@ -101,6 +196,12 @@ type AppState = {
   addRecentSearch: (search: string) => void
   markNotificationRead: (id: string) => void
   markAllNotificationsRead: () => void
+  addNotification: (notification: Omit<AppNotification, 'id'> & { id?: string }) => void
+  addUserPropertyListing: (listing: UserPropertyListing) => void
+  updateUserPropertyListingStatus: (id: string, status: ListingReviewStatus, brokerNotes?: string, mlsNumber?: string) => void
+  deleteUserPropertyListing: (id: string) => void
+  addTeamApplication: (app: TeamApplication) => void
+  updateTeamApplicationStatus: (id: string, status: TeamApplication['status'], brokerFeedback?: string) => void
 }
 
 export const initialFilters: Filters = {
@@ -125,6 +226,8 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   filters: initialFilters,
   recentSearches: [],
   notifications: initialNotifications,
+  userPropertyListings: defaultUserPropertyListings,
+  teamApplications: defaultTeamApplications,
   mapLayer: 'street',
   setMapLayer: (mapLayer) => set({ mapLayer }),
   toggleMapLayer: () => set((state) => ({ mapLayer: state.mapLayer === 'satellite' ? 'street' : 'satellite' })),
@@ -147,6 +250,52 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   })),
   markAllNotificationsRead: () => set((state) => ({
     notifications: state.notifications.map((notification) => ({ ...notification, read: true })),
+  })),
+  addNotification: (notification) => set((state) => ({
+    notifications: [
+      {
+        id: notification.id || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        title: notification.title,
+        message: notification.message,
+        date: notification.date || 'Just now',
+        read: false,
+        propertyId: notification.propertyId,
+      },
+      ...state.notifications,
+    ],
+  })),
+  addUserPropertyListing: (listing) => set((state) => ({
+    userPropertyListings: [listing, ...(state.userPropertyListings || [])],
+  })),
+  updateUserPropertyListingStatus: (id, status, brokerNotes, mlsNumber) => set((state) => ({
+    userPropertyListings: (state.userPropertyListings || []).map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            status,
+            reviewedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            brokerNotes: brokerNotes !== undefined ? brokerNotes : item.brokerNotes,
+            mlsNumber: mlsNumber !== undefined ? mlsNumber : item.mlsNumber,
+          }
+        : item
+    ),
+  })),
+  deleteUserPropertyListing: (id) => set((state) => ({
+    userPropertyListings: (state.userPropertyListings || []).filter((item) => item.id !== id),
+  })),
+  addTeamApplication: (app) => set((state) => ({
+    teamApplications: [app, ...(state.teamApplications || [])],
+  })),
+  updateTeamApplicationStatus: (id, status, brokerFeedback) => set((state) => ({
+    teamApplications: (state.teamApplications || []).map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            status,
+            brokerFeedback: brokerFeedback !== undefined ? brokerFeedback : item.brokerFeedback,
+          }
+        : item
+    ),
   })),
 }), { name: 'arizona-life-app' }))
 

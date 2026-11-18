@@ -6,7 +6,6 @@ import {
   Heart,
   House,
   Map as MapIcon,
-  Search,
   User,
 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
@@ -20,7 +19,6 @@ interface TabConfig {
 
 const TABS: TabConfig[] = [
   { to: '/', label: 'Home', icon: House },
-  { to: '/search', label: 'Search', icon: Search },
   { to: '/saved', label: 'Saved', icon: Heart },
   { to: '/map', label: 'Map', icon: MapIcon },
   { to: '/dashboard', label: 'Profile', icon: User },
@@ -35,10 +33,9 @@ export default function LiquidNavbar() {
   const activeIndex = useMemo(() => {
     const path = location.pathname
     if (path === '/') return 0
-    if (path.startsWith('/search') || path.startsWith('/browse') || path.startsWith('/property')) return 1
-    if (path.startsWith('/saved')) return 2
-    if (path.startsWith('/map')) return 3
-    if (path.startsWith('/dashboard') || path.startsWith('/profile')) return 4
+    if (path.startsWith('/saved')) return 1
+    if (path.startsWith('/map')) return 2
+    if (path.startsWith('/dashboard') || path.startsWith('/profile')) return 3
     return -1
   }, [location.pathname])
 

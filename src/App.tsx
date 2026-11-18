@@ -48,6 +48,8 @@ function App() {
   const location = useLocation()
   const [drawer, setDrawer] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [sort, setSort] = useState('Featured')
   const [inquiryOpen, setInquiryOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [toast, setToast] = useState('')
@@ -337,8 +339,8 @@ function App() {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={location.pathname} className="route-motion" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
               <Routes>
-                <Route path="/" element={<Home onNotify={notify} />} />
-                <Route path="/search" element={<Results search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} onNotify={notify} />} />
+                <Route path="/" element={<Home onNotify={notify} search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
+                <Route path="/search" element={<Results search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} onNotify={notify} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
                 <Route path="/saved" element={<Saved onNotify={notify} />} />
                 <Route path="/map" element={<MapScreen />} />
                 <Route path="/dashboard" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
@@ -347,7 +349,7 @@ function App() {
                 <Route path="/property/:id" element={<PropertyDetail onNotify={notify} onMessage={() => setInquiryOpen(true)} />} />
                 <Route path="/browse/:category" element={<Browse onPick={handleBrowsePick} />} />
                 <Route path="/info" element={<Info />} />
-                <Route path="*" element={<Home onNotify={notify} />} />
+                <Route path="*" element={<Home onNotify={notify} search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
               </Routes>
             </motion.div>
           </AnimatePresence>
@@ -362,6 +364,7 @@ function App() {
           else navigate('/search')
         }} />}</AnimatePresence>
         <AnimatePresence>{filtersOpen && <FilterSheet onClose={() => setFiltersOpen(false)} onApply={() => { setFiltersOpen(false); navigate('/search'); notify('Filters applied') }} />}</AnimatePresence>
+        <AnimatePresence>{sortOpen && <BottomSheet title="Sort properties" onClose={() => setSortOpen(false)}><div className="sort-options">{['Featured', 'Price: low to high', 'Price: high to low', 'Acreage', 'Newest'].map((option) => <button key={option} className={sort === option ? 'chosen' : ''} onClick={() => { setSort(option); setSortOpen(false); if (location.pathname !== '/search') navigate('/search'); }}>{option}{sort === option && <Check size={17} />}</button>)}</div></BottomSheet>}</AnimatePresence>
         <AnimatePresence>{inquiryOpen && <InquirySheet onClose={() => setInquiryOpen(false)} onSend={() => { setInquiryOpen(false); notify('Thanks! Rick will be in touch shortly.') }} />}</AnimatePresence>
         <AnimatePresence>{toast && <motion.div className="toast-message" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}><Check size={16} />{toast}</motion.div>}</AnimatePresence>
         <AnimatePresence>{authOpen && <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={(user) => notify(`Welcome back, ${user.name}!`)} />}</AnimatePresence>
@@ -374,7 +377,21 @@ function App() {
 
 
 
-function Home({ onNotify }: { onNotify?: (message: string) => void }) {
+function Home({
+  onNotify,
+  search,
+  onSearch,
+  onFilters,
+  sort,
+  onSortOpen,
+}: {
+  onNotify?: (message: string) => void
+  search: string
+  onSearch: (value: string) => void
+  onFilters?: () => void
+  sort?: string
+  onSortOpen?: () => void
+}) {
   const navigate = useNavigate()
   const featuredTypes = useMemo(() => [
     {
@@ -413,7 +430,14 @@ function Home({ onNotify }: { onNotify?: (message: string) => void }) {
       <HeroCarousel onNotify={onNotify} />
 
       {/* Change 4 & 5: Visual bottom-sheet overlap containing stat strip, continue card, and featured content */}
-      <ContentSheet onNotify={onNotify}>
+      <ContentSheet
+        onNotify={onNotify}
+        search={search}
+        onSearch={onSearch}
+        onFilters={onFilters}
+        sort={sort}
+        onSortOpen={onSortOpen}
+      >
         <section className="section-block featured-section">
           <SectionHeading kicker="Serving Southern  Arizona Counties" title="Featured Properties" action="View all" onAction={() => navigate('/search')} />
           <SlidableScroller>
@@ -504,11 +528,34 @@ function SectionHeading({ kicker, title, action, onAction, children }: { kicker?
   return <div className="section-heading">{kicker && <span className="welcome-kicker">{kicker}</span>}<h2>{title}</h2><div className="heading-underline" />{action && <button className="heading-action" onClick={onAction}>{action} <ArrowRight size={14} /></button>}{children}</div>
 }
 
-function Results({ search, onSearch, onFilters, onNotify }: { search: string; onSearch: (value: string) => void; onFilters: () => void; onNotify: (value: string) => void }) {
+function Results({
+  search,
+  onSearch,
+  onFilters,
+  onNotify,
+  sort,
+  onSortOpen,
+}: {
+  search: string
+  onSearch: (value: string) => void
+  onFilters: () => void
+  onNotify: (value: string) => void
+  sort: string
+  onSortOpen: () => void
+}) {
+  const navigate = useNavigate()
   const [mode, setMode] = useState<'list' | 'grid' | 'map'>('list')
-  const [sortOpen, setSortOpen] = useState(false)
-  const [sort, setSort] = useState('Featured')
   const filters = useAppStore((state) => state.filters)
+  const hasActiveFilters = Boolean(
+    filters.types.length ||
+    filters.counties.length ||
+    filters.cities.length ||
+    filters.features.length ||
+    filters.minPrice > 0 ||
+    filters.maxPrice < 1000000 ||
+    filters.minAcres > 0 ||
+    filters.maxAcres < 500
+  )
   const allFiltered = useMemo(() => {
     const query = search.toLowerCase()
     const result = getFilteredProperties(properties, filters).filter((property) => !query || [property.title, property.city, property.county, property.address, property.mls, property.type].some((text) => text.toLowerCase().includes(query)))
@@ -518,30 +565,74 @@ function Results({ search, onSearch, onFilters, onNotify }: { search: string; on
     if (sort === 'Newest') result.sort((a, b) => properties.indexOf(b) - properties.indexOf(a))
     return result
   }, [filters, search, sort])
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
+
   return <div className="page-screen results-screen">
+    <div className="results-nav">
+      <button
+        type="button"
+        className="results-back-btn"
+        onClick={handleBack}
+        aria-label="Back"
+      >
+        <ChevronLeft size={20} />
+        <span>Back</span>
+      </button>
+      <span className="results-nav-title">SEARCH PROPERTIES</span>
+      <div className="results-nav-spacer" aria-hidden="true" />
+    </div>
     <SectionHeading title="Find your place">
-      <div className="heading-searchbar">
-        <span className="heading-search-icon" aria-hidden="true"><Search size={16} /></span>
-        <input
-          type="text"
-          value={search}
-          onChange={(event) => onSearch(event.target.value)}
-          placeholder="Search city, county, title..."
-          aria-label="Search properties"
-        />
-        {search && (
-          <button
-            type="button"
-            className="heading-search-clear"
-            aria-label="Clear search"
-            onClick={() => {
-              onSearch('')
-              onNotify('Search cleared')
-            }}
-          >
-            <X size={15} />
-          </button>
-        )}
+      <div className="search-bar-row">
+        <div className="heading-searchbar">
+          <span className="heading-search-icon" aria-hidden="true"><Search size={16} /></span>
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            placeholder="Search city, county, title..."
+            aria-label="Search properties"
+          />
+          {search && (
+            <button
+              type="button"
+              className="heading-search-clear"
+              aria-label="Clear search"
+              onClick={() => {
+                onSearch('')
+                onNotify('Search cleared')
+              }}
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="search-action-btn search-featured-btn"
+          onClick={onSortOpen}
+          aria-label={`Sort properties, currently: ${sort}`}
+          title={`Sort properties: ${sort}`}
+        >
+          <ArrowDownUp size={16} />
+        </button>
+
+        <button
+          type="button"
+          className={`search-action-btn search-filter-btn ${hasActiveFilters ? 'is-filtered' : ''}`}
+          onClick={onFilters}
+          aria-label="Filter properties"
+          title="Filter properties"
+        >
+          <SlidersHorizontal size={16} />
+        </button>
       </div>
       <div className="search-quick-tags" aria-label="Popular search suggestions">
         <span>Popular:</span>
@@ -557,12 +648,11 @@ function Results({ search, onSearch, onFilters, onNotify }: { search: string; on
         ))}
       </div>
     </SectionHeading>
-    <div className="results-summary"><div><strong>{allFiltered.length}</strong><span> places to explore</span></div><button onClick={() => setSortOpen(true)}><ArrowDownUp size={15} /> {sort}</button></div>
+    <div className="results-summary"><div><strong>{allFiltered.length}</strong><span> places to explore</span></div><button onClick={onSortOpen}><ArrowDownUp size={15} /> {sort}</button></div>
     <div className="results-toolbar"><div className="view-toggle">{(['list', 'grid', 'map'] as const).map((item) => <button className={mode === item ? 'selected' : ''} key={item} onClick={() => setMode(item)}>{item === 'list' ? 'List' : item === 'grid' ? 'Grid' : 'Map'}</button>)}</div><button className="filter-toolbar" onClick={onFilters}><SlidersHorizontal size={16} /> Filters</button></div>
     {search && <div className="active-search">Showing results for <strong>{search}</strong><button aria-label="Clear search" onClick={() => { onSearch(''); onNotify('Search cleared') }}><X size={14} /></button></div>}
     {mode === 'map' ? <ResultsMap listings={allFiltered} /> : allFiltered.length ? <div className={mode === 'grid' ? 'results-grid' : 'results-list'}>{allFiltered.map((property) => <PropertyCard key={property.id} property={property} />)}</div> : <EmptyState title="No places found just yet" text="Try widening your search or removing a filter to discover more Arizona land." action="Clear filters" onAction={() => { useAppStore.getState().setFilters(initialFilters); onSearch('') }} />}
     <div className="results-footer">You’re all caught up <span>·</span> {allFiltered.length} of {properties.length} places</div>
-    <AnimatePresence>{sortOpen && <BottomSheet title="Sort properties" onClose={() => setSortOpen(false)}><div className="sort-options">{['Featured', 'Price: low to high', 'Price: high to low', 'Acreage', 'Newest'].map((option) => <button key={option} className={sort === option ? 'chosen' : ''} onClick={() => { setSort(option); setSortOpen(false) }}>{option}{sort === option && <Check size={17} />}</button>)}</div></BottomSheet>}</AnimatePresence>
   </div>
 }
 

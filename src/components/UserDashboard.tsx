@@ -828,6 +828,12 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
               onClick={() => navigate('/search')}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  navigate('/search')
+                }
+              }}
             >
               <div className="action-tile-icon green">
                 <Search size={18} />
@@ -844,6 +850,12 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
               onClick={() => handleTabChange('saved')}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleTabChange('saved')
+                }
+              }}
             >
               <div className="action-tile-icon red">
                 <Heart size={18} />
@@ -860,6 +872,12 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
               onClick={() => handleTabChange('preferences')}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleTabChange('preferences')
+                }
+              }}
             >
               <div className="action-tile-icon blue">
                 <Sliders size={18} />
@@ -876,6 +894,12 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
               onClick={() => navigate('/map')}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  navigate('/map')
+                }
+              }}
             >
               <div className="action-tile-icon amber">
                 <Compass size={18} />
