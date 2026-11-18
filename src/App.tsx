@@ -19,26 +19,9 @@ import AuthModal from './components/AuthModal'
 import ucLogo from './assets/uc-logo.png'
 import { getFilteredProperties, initialFilters, propertyMatchesType, useAppStore } from './store/useAppStore'
 import type { AppNotification, Filters } from './store/useAppStore'
+import { HeroCarousel, ContentSheet } from './components/hero'
+import { LAST_VIEWED_STORAGE_KEY } from './data/userActivity'
 import './App.css'
-
-const heroSlides = [
-  {
-    img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=90',
-    label: 'Mountain vistas',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1400&q=90',
-    label: 'Wide open land',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1400&q=90',
-    label: 'Desert sunsets',
-  },
-  {
-    img: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1400&q=90',
-    label: 'Room to roam',
-  },
-]
 const counties = ['Cochise', 'Pima', 'Graham', 'Santa Cruz']
 const featureOptions = ['Well', 'Gated community', 'Horses allowed', 'Mountain views', 'Near National Forest', 'Commercial potential', 'Owner financing']
 
@@ -70,10 +53,14 @@ function App() {
   const [intro, setIntro] = useState(false)
   const darkMode = useAppStore((state) => state.darkMode)
   const toggleDarkMode = useAppStore((state) => state.toggleDarkMode)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dark') === '1') {
+      useAppStore.getState().setDarkMode(true)
+    }
+  }, [])
   const currentUser = useAppStore((state) => state.currentUser)
-  const [authOpen, setAuthOpen] = useState(() => {
-    return localStorage.getItem('az-auth-completed') !== 'yes'
-  })
+  const [authOpen, setAuthOpen] = useState(false)
   const notifications = useAppStore((state) => state.notifications)
   const unreadCount = notifications.filter((notification) => !notification.read).length
   const [islandExpanded, setIslandExpanded] = useState(false)
@@ -208,7 +195,7 @@ function App() {
 
           <header className="appbar">
           <Link className="brand-lockup" to="/" aria-label="Arizona Life Homes and Land home">
-            <img src={ucLogo} alt="United Country Real Estate" className="uc-mark" />
+            <img src={ucLogo} alt="United Country Real Estate" className="uc-mark" /><span>|</span>
             <div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div>
           </Link>
           <div className="appbar-actions">
@@ -255,7 +242,7 @@ function App() {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={location.pathname} className="route-motion" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Home onNotify={notify} />} />
                 <Route path="/search" element={<Results search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} onNotify={notify} />} />
                 <Route path="/saved" element={<Saved onNotify={notify} />} />
                 <Route path="/map" element={<MapScreen />} />
@@ -263,7 +250,7 @@ function App() {
                 <Route path="/property/:id" element={<PropertyDetail onNotify={notify} onMessage={() => setInquiryOpen(true)} />} />
                 <Route path="/browse/:category" element={<Browse onPick={handleBrowsePick} />} />
                 <Route path="/info" element={<Info />} />
-                <Route path="*" element={<Home />} />
+                <Route path="*" element={<Home onNotify={notify} />} />
               </Routes>
             </motion.div>
           </AnimatePresence>
@@ -290,122 +277,7 @@ function App() {
 
 
 
-function HeroCarousel() {
-  const [index, setIndex] = useState(0)
-  const [direction, setDirection] = useState(1)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const isDownRef = useRef(false)
-  const startXRef = useRef(0)
-  const dragDiffRef = useRef(0)
-  const isDraggingRef = useRef(false)
-  const total = heroSlides.length
-
-  const goTo = useCallback((next: number, dir?: number) => {
-    setDirection(dir ?? (next > index ? 1 : -1))
-    setIndex((next + total) % total)
-  }, [index, total])
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isDownRef.current) {
-        goTo((index + 1) % total, 1)
-      }
-    }, 4500)
-    return () => clearInterval(timer)
-  }, [index, goTo, total])
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Primary button or touch
-    if (e.button !== 0) return
-    isDownRef.current = true
-    startXRef.current = e.clientX
-    dragDiffRef.current = 0
-    isDraggingRef.current = false
-
-    const handlePointerMove = (moveEvent: PointerEvent) => {
-      if (!isDownRef.current) return
-      const diff = startXRef.current - moveEvent.clientX
-      dragDiffRef.current = diff
-      if (Math.abs(diff) > 5) {
-        isDraggingRef.current = true
-        containerRef.current?.classList.add('is-pointer-dragging')
-      }
-    }
-
-    const handlePointerUp = () => {
-      if (!isDownRef.current) return
-      isDownRef.current = false
-      containerRef.current?.classList.remove('is-pointer-dragging')
-
-      const diff = dragDiffRef.current
-      if (Math.abs(diff) > 35) {
-        goTo(diff > 0 ? index + 1 : index - 1, diff > 0 ? 1 : -1)
-      }
-
-      if (isDraggingRef.current) {
-        const preventClick = (clickEvent: MouseEvent) => {
-          clickEvent.preventDefault()
-          clickEvent.stopPropagation()
-          clickEvent.stopImmediatePropagation()
-        }
-        window.addEventListener('click', preventClick, { capture: true, once: true })
-        window.setTimeout(() => {
-          window.removeEventListener('click', preventClick, { capture: true })
-          isDraggingRef.current = false
-        }, 50)
-      }
-
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerUp)
-      window.removeEventListener('pointercancel', handlePointerUp)
-    }
-
-    window.addEventListener('pointermove', handlePointerMove)
-    window.addEventListener('pointerup', handlePointerUp)
-    window.addEventListener('pointercancel', handlePointerUp)
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      className="hero-carousel"
-      onPointerDown={handlePointerDown}
-      role="region"
-      aria-label="Hero carousel"
-    >
-      <AnimatePresence initial={false} custom={direction}>
-        <motion.div
-          key={index}
-          className="hero-carousel-slide"
-          style={{ backgroundImage: `url("${heroSlides[index].img}")` }}
-          custom={direction}
-          variants={{
-            enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0.6 }),
-            center: { x: 0, opacity: 1 },
-            exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0.6 }),
-          }}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.48, ease: [0.32, 0, 0.18, 1] }}
-        />
-      </AnimatePresence>
-      <div className="hero-overlay" />
-      <div className="hero-carousel-dots">
-        {heroSlides.map((_, i) => (
-          <button
-            key={i}
-            className={`hero-dot ${i === index ? 'active' : ''}`}
-            onClick={(e) => { e.stopPropagation(); goTo(i) }}
-            aria-label={`Slide ${i + 1}: ${heroSlides[i].label}`}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function Home() {
+function Home({ onNotify }: { onNotify?: (message: string) => void }) {
   const navigate = useNavigate()
   const featuredTypes = useMemo(() => [
     {
@@ -437,96 +309,98 @@ function Home() {
       count: properties.filter((p) => p.type.toLowerCase().includes('home') || p.type === 'Residential').length || 4,
     },
   ], [])
-  return <div className="home-screen">
-    <section className="hero-panel">
-      <HeroCarousel />
-      <div className="hero-eyebrow"><span className="eyebrow-line" /> A DIFFERENT KIND OF PLACE <span className="eyebrow-line" /></div>
-      <h1>Find your<br /><em>Arizona</em> moment.</h1>
-      <p>Room to roam. Space to grow. A place to call yours.</p>
-      <div className="hero-cta-row"><button className="hero-button" onClick={() => navigate('/search')}>Explore properties <ArrowRight size={16} /></button></div>
-    </section>
 
-  
+  return (
+    <div className="home-screen">
+      {/* Change 1 & 2: Inset rounded swipeable cards & native controls */}
+      <HeroCarousel onNotify={onNotify} />
 
-    <section className="section-block featured-section">
-      <SectionHeading kicker="Serving Southern  Arizona Counties" title="Featured Properties" action="View all" onAction={() => navigate('/search')} />
-      <SlidableScroller>
-        {properties.slice(0, 5).map((property) => <PropertyCard key={property.id} property={property} compact />)}
-        <button className="see-all-card" onClick={() => navigate('/search')}>
-          <span><ArrowRight /></span>
-          <strong>See all<br />properties</strong>
-          <small>12 places to explore</small>
-        </button>
-      </SlidableScroller>
-    </section>
+      {/* Change 4 & 5: Visual bottom-sheet overlap containing stat strip, continue card, and featured content */}
+      <ContentSheet onNotify={onNotify}>
+        <section className="section-block featured-section">
+          <SectionHeading kicker="Serving Southern  Arizona Counties" title="Featured Properties" action="View all" onAction={() => navigate('/search')} />
+          <SlidableScroller>
+            {properties.slice(0, 5).map((property) => <PropertyCard key={property.id} property={property} compact />)}
+            <button className="see-all-card" onClick={() => navigate('/search')}>
+              <span><ArrowRight /></span>
+              <strong>See all<br />properties</strong>
+              <small>12 places to explore</small>
+            </button>
+          </SlidableScroller>
+        </section>
 
-     <section className="promise-card">
-      <div className="promise-icon"><Compass size={21} /></div><div><span className="welcome-kicker">ROOTED HERE. READY TO HELP.</span><h3>Local knowledge.<br />A personal touch.</h3><p>We know this land, these communities, and what makes southern Arizona feel like home.</p><button onClick={() => navigate('/contact')}>Meet our local broker <ArrowRight size={15} /></button></div>
-    </section>
-   
-    <section className="partner-section">
-      <h3>Our trusted partners</h3>
-      <div className="partner-marquee">
-        <div className="partner-track">
-          <div className="partner-track-group">
-            {partnerLogos.map((partner, index) => (
-              <div className="partner-logo-item" key={`${partner.name}-${index}`} title={partner.name}>
-                <img src={partner.src} alt={partner.name} className="partner-logo-img" loading="lazy" />
+        <section className="promise-card">
+          <div className="promise-icon"><Compass size={21} /></div>
+          <div>
+            <span className="welcome-kicker">ROOTED HERE. READY TO HELP.</span>
+            <h3>Local knowledge.<br />A personal touch.</h3>
+            <p>We know this land, these communities, and what makes southern Arizona feel like home.</p>
+            <button onClick={() => navigate('/contact')}>Meet our local broker <ArrowRight size={15} /></button>
+          </div>
+        </section>
+       
+        <section className="partner-section">
+          <h3>Our trusted partners</h3>
+          <div className="partner-marquee">
+            <div className="partner-track">
+              <div className="partner-track-group">
+                {partnerLogos.map((partner, index) => (
+                  <div className="partner-logo-item" key={`${partner.name}-${index}`} title={partner.name}>
+                    <img src={partner.src} alt={partner.name} className="partner-logo-img" loading="lazy" />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="partner-track-group" aria-hidden="true">
-            {partnerLogos.map((partner, index) => (
-              <div className="partner-logo-item" key={`${partner.name}-dup-${index}`} title={partner.name}>
-                <img src={partner.src} alt="" className="partner-logo-img" loading="lazy" />
+              <div className="partner-track-group" aria-hidden="true">
+                {partnerLogos.map((partner, index) => (
+                  <div className="partner-logo-item" key={`${partner.name}-dup-${index}`} title={partner.name}>
+                    <img src={partner.src} alt="" className="partner-logo-img" loading="lazy" />
+                  </div>
+                ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-block type-section">
+          <SectionHeading kicker="MAKE IT YOUR OWN" title="Find your kind of place" />
+          <SlidableScroller className="type-scroller" ariaLabel="Property types slider">
+            {featuredTypes.map((item) => (
+              <button
+                key={item.name}
+                className="type-card-unit"
+                onClick={() => navigate(`/browse/${encodeURIComponent(item.category.toLowerCase())}`)}
+              >
+                <div className="type-square-card">
+                  <img src={item.image} alt={item.name} className="type-square-img" loading="lazy" />
+                </div>
+                <div className="type-card-info">
+                  <span className="type-card-title">{item.name}</span>
+                  <span className="type-card-count">{item.count} places</span>
+                </div>
+              </button>
             ))}
+            <button
+              className="type-card-unit type-browse-all-unit"
+              onClick={() => navigate('/browse/type')}
+              aria-label="Browse all property types"
+            >
+              <div className="type-circle-container">
+                <div className="type-circle-button">
+                  <ChevronRight size={18} />
+                </div>
+              </div>
+              <div className="type-card-info">
+                <span className="type-card-count">Explore all</span>
+              </div>
+            </button>
+          </SlidableScroller>
+          <div className="browse-shortcuts" aria-label="More ways to browse">
+            {[['State', 'state'], ['County', 'county'], ['City', 'city'], ['Price', 'price']].map(([label, path]) => <button key={path} onClick={() => navigate(`/browse/${path}`)}>By {label}</button>)}
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section className="section-block type-section">
-      <SectionHeading kicker="MAKE IT YOUR OWN" title="Find your kind of place" />
-      <SlidableScroller className="type-scroller" ariaLabel="Property types slider">
-        {featuredTypes.map((item) => (
-          <button
-            key={item.name}
-            className="type-card-unit"
-            onClick={() => navigate(`/browse/${encodeURIComponent(item.category.toLowerCase())}`)}
-          >
-            <div className="type-square-card">
-              <img src={item.image} alt={item.name} className="type-square-img" loading="lazy" />
-            </div>
-            <div className="type-card-info">
-              <span className="type-card-title">{item.name}</span>
-              <span className="type-card-count">{item.count} places</span>
-            </div>
-          </button>
-        ))}
-        <button
-          className="type-card-unit type-browse-all-unit"
-          onClick={() => navigate('/browse/type')}
-          aria-label="Browse all property types"
-        >
-          <div className="type-circle-container">
-            <div className="type-circle-button">
-              <ChevronRight size={18} />
-            </div>
-          </div>
-          <div className="type-card-info">
-            <span className="type-card-count">Explore all</span>
-          </div>
-        </button>
-      </SlidableScroller>
-      <div className="browse-shortcuts" aria-label="More ways to browse">
-        {[['State', 'state'], ['County', 'county'], ['City', 'city'], ['Price', 'price']].map(([label, path]) => <button key={path} onClick={() => navigate(`/browse/${path}`)}>By {label}</button>)}
-      </div>
-    </section>
-
-   
-
-  </div>
+        </section>
+      </ContentSheet>
+    </div>
+  )
 }
 
 function SectionHeading({ kicker, title, action, onAction, children }: { kicker?: string; title: string; action?: string; onAction?: () => void; children?: React.ReactNode }) {
@@ -901,6 +775,14 @@ function formatVideoTime(seconds: number) {
 function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => void; onMessage: () => void }) {
   const { id } = useParams()
   const property = properties.find((item) => item.id === id) || properties[0]
+
+  useEffect(() => {
+    if (property?.id) {
+      try {
+        localStorage.setItem(LAST_VIEWED_STORAGE_KEY, property.id)
+      } catch (_) {}
+    }
+  }, [property?.id])
   const [mediaTab, setMediaTab] = useState<'photos' | 'video'>('photos')
   const [imageIndex, setImageIndex] = useState(0)
   const [showGallery, setShowGallery] = useState(false)

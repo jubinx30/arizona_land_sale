@@ -21,6 +21,7 @@ export type Property = {
   video?: PropertyVideo
   lat: number
   lng: number
+  boundary?: [number, number][]
 }
 
 const image = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1000&q=85`
@@ -45,6 +46,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Dragoon Mountain Ranch', 'photo-1602138759009-ca3386c95619'),
     lat: 31.909, lng: -110.111,
+    boundary: [
+      [31.9108, -110.1130],
+      [31.9110, -110.1090],
+      [31.9073, -110.1088],
+      [31.9071, -110.1128],
+    ],
   },
   {
     id: 'benson-19', price: 120000, title: '19.93 Acres of Vacant Land in Benson', acres: 19.93,
@@ -58,6 +65,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Benson Homestead & Pasture', 'photo-1500382017468-9049fed747ef'),
     lat: 31.967, lng: -110.296,
+    boundary: [
+      [31.9688, -110.2982],
+      [31.9689, -110.2938],
+      [31.9652, -110.2937],
+      [31.9651, -110.2981],
+    ],
   },
   {
     id: 'willcox-29', price: 99500, title: '29+ Acres of Willcox Open Range', acres: 29.6,
@@ -71,6 +84,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Willcox Open Range', 'photo-1509316785289-025f5b846b35'),
     lat: 32.252, lng: -109.832,
+    boundary: [
+      [32.2542, -109.8350],
+      [32.2543, -109.8290],
+      [32.2499, -109.8288],
+      [32.2498, -109.8348],
+    ],
   },
   {
     id: 'pearce-homestead', price: 95000, title: 'Desert Homestead with Mountain Views', acres: 20.1,
@@ -84,6 +103,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Chiricahua Foothills Homestead', 'photo-1773597920797-59503c3dd89c'),
     lat: 31.867, lng: -109.825,
+    boundary: [
+      [31.8690, -109.8272],
+      [31.8691, -109.8228],
+      [31.8651, -109.8226],
+      [31.8650, -109.8270],
+    ],
   },
   {
     id: 'elfrida-68', price: 68000, title: 'Quiet 10 Acres Near Elfrida', acres: 10.02,
@@ -97,6 +122,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Elfrida Open Range', 'photo-1792378312222-c5f48bd2f9f2'),
     lat: 31.702, lng: -109.694,
+    boundary: [
+      [31.7032, -109.6953],
+      [31.7033, -109.6927],
+      [31.7008, -109.6926],
+      [31.7007, -109.6952],
+    ],
   },
   {
     id: 'benson-67', price: 67000, title: 'Buildable Benson Acreage', acres: 10.0,
@@ -110,6 +141,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Buildable Benson Acreage', 'photo-1688066521488-8d94f1b78cfd'),
     lat: 31.996, lng: -110.242,
+    boundary: [
+      [31.9972, -110.2433],
+      [31.9973, -110.2407],
+      [31.9948, -110.2406],
+      [31.9947, -110.2432],
+    ],
   },
   {
     id: 'dragoon-38', price: 53500, title: '38 Acres in Gated Dragoon Mountain Ranch', acres: 38,
@@ -123,6 +160,13 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Dragoon Mountain Wildlife & Trails', 'photo-1770154874329-8ccef1b7f132'),
     lat: 31.879, lng: -110.154,
+    boundary: [
+      [31.8812, -110.1565],
+      [31.8813, -110.1518],
+      [31.8785, -110.1512],
+      [31.8767, -110.1528],
+      [31.8768, -110.1563],
+    ],
   },
   {
     id: 'benson-9', price: 50000, title: '9.93 Acres of Vacant Land in Benson', acres: 9.93,
@@ -136,6 +180,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Wildcat Pl Boundary Parcel', 'photo-1762572810285-9f926f94aae1'),
     lat: 31.948, lng: -110.31,
+    boundary: [
+      [31.9492, -110.3113],
+      [31.9493, -110.3087],
+      [31.9468, -110.3086],
+      [31.9467, -110.3112],
+    ],
   },
   {
     id: 'panorama-36', price: 49900, title: 'Spectacular Arizona Property with Panoramic Mountain View', acres: 36.18,
@@ -149,6 +199,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Panoramic Peak & Cochise Stronghold', 'photo-1549318558-02fe75fc51d2'),
     lat: 31.887, lng: -109.965,
+    boundary: [
+      [31.8890, -109.9674],
+      [31.8892, -109.9626],
+      [31.8850, -109.9624],
+      [31.8848, -109.9672],
+    ],
   },
   {
     id: 'buildable-36', price: 89000, title: 'Spectacular Buildable Arizona Property', acres: 36.26,
@@ -162,6 +218,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Dragoon Road Acreage Aerial', 'photo-1786246537683-d0e0f6bc93f2'),
     lat: 31.918, lng: -110.075,
+    boundary: [
+      [31.9200, -110.0774],
+      [31.9202, -110.0726],
+      [31.9160, -110.0724],
+      [31.9158, -110.0772],
+    ],
   },
   {
     id: 'forest-edge', price: 79000, title: '36+ Acres Adjoining National Forest', acres: 36.37,
@@ -175,6 +237,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('National Forest Boundary Drone Flight', 'photo-1694550180363-588984f3eb30'),
     lat: 31.856, lng: -110.138,
+    boundary: [
+      [31.8580, -110.1404],
+      [31.8582, -110.1356],
+      [31.8540, -110.1354],
+      [31.8538, -110.1402],
+    ],
   },
   {
     id: 'hwy80-commercial', price: 325000, title: 'Commercial Property on Hwy 80', acres: 1.02,
@@ -188,6 +256,12 @@ export const properties: Property[] = [
     ],
     video: defaultVideo('Commercial Frontage & Corridor View', 'photo-1469854523086-cc02fe5d8800'),
     lat: 31.986, lng: -110.327,
+    boundary: [
+      [31.9865, -110.3275],
+      [31.9866, -110.3264],
+      [31.9855, -110.3263],
+      [31.9854, -110.3274],
+    ],
   },
 ]
 

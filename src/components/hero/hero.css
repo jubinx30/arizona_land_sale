@@ -1,0 +1,615 @@
+@import '../../styles/glass.css';
+
+/* ==========================================================================
+   Hero Carousel Container & Scroll Snap Track
+   ========================================================================== */
+
+.hero-carousel-container {
+  position: relative;
+  width: 100%;
+  padding-top: 10px;
+  /* Extra bottom padding accounts for the 28px bottom sheet overlap so cards are never obscured */
+  padding-bottom: 34px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hero-carousel-parallax-layer {
+  width: 100%;
+  will-change: transform, opacity;
+  transition: transform 0.05s linear;
+}
+
+.hero-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* Shifted to the right for a balanced, premium mobile frame */
+  padding: 4px 24px 12px 24px;
+  box-sizing: border-box;
+  scroll-padding-left: 24px;
+  scroll-padding-right: 24px;
+}
+
+.hero-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
+   Hero Inset Card
+   ========================================================================== */
+
+.hero-card-item {
+  /* Positioned nicely with 24px left margin and 24-28px right peek */
+  flex: 0 0 calc(100% - 48px);
+  max-width: 364px;
+  min-width: 295px;
+  height: 236px;
+  border-radius: 24px;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -4px rgba(12, 28, 38, 0.18), 0 4px 10px rgba(12, 28, 38, 0.08);
+  cursor: pointer;
+  background-color: #121c24;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease, box-shadow 0.35s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x pan-y;
+}
+
+/* Active card at full scale, peeking neighbor cards at ~0.95 scale and slight opacity */
+.hero-card-item.is-active {
+  transform: scale(1);
+  opacity: 1;
+  z-index: 2;
+}
+
+.hero-card-item.is-neighbor {
+  transform: scale(0.95);
+  opacity: 0.92;
+  z-index: 1;
+}
+
+.hero-card-item:active {
+  transform: scale(0.985);
+}
+
+.hero-card-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+  pointer-events: none;
+}
+
+/* Dark Gradient Scrim (bottom-up so overlay elements remain crisp and readable) */
+.hero-card-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 26, 34, 0.45) 0%,
+    rgba(14, 26, 34, 0.08) 28%,
+    rgba(12, 22, 28, 0.55) 60%,
+    rgba(8, 16, 22, 0.88) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Story-style Segmented Progress Bar
+   ========================================================================== */
+
+.hero-story-progress {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  right: 100px; /* leaves room for top-right Save & Share chips */
+  height: 3px;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.hero-story-segment {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.32);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.hero-story-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   Top Ribbon Badges & Status Chips
+   ========================================================================== */
+
+.hero-badge-ribbon {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  z-index: 4;
+  background: var(--green);
+  color: #ffffff;
+  border-radius: 0 5px 5px 0;
+  padding: 4px 9px 4px 10px;
+  font: 700 8.5px/1.3 'Montserrat', sans-serif;
+  letter-spacing: 0.8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.hero-badge-ribbon--drop {
+  background: #dc2626;
+}
+
+.hero-badge-ribbon--open {
+  background: #0284c7;
+}
+
+.hero-badge-ribbon--brand {
+  background: #2b3a4f;
+}
+
+/* ==========================================================================
+   Save & Share Frosted Icon Chips (Top Right)
+   ========================================================================== */
+
+.hero-top-actions {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 6;
+}
+
+.hero-frosted-chip-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: var(--glass-chip-border);
+  background: var(--glass-chip-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-chip-shadow);
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hero-frosted-chip-btn:active {
+  transform: scale(0.88);
+}
+
+.hero-frosted-chip-btn.is-saved {
+  color: #ef4444;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.hero-frosted-chip-btn.is-saved svg {
+  fill: #ef4444;
+  filter: drop-shadow(0 1px 3px rgba(239, 68, 68, 0.4));
+}
+
+.hero-share-toast {
+  position: absolute;
+  top: 52px;
+  right: 10px;
+  background: rgba(14, 26, 34, 0.92);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 7;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Frosted Overlay Panel (Change 3)
+   ========================================================================== */
+
+.hero-glass-panel {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 4;
+  border-radius: 18px; /* Concentric with outer 24px radius minus ~10px inset */
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 84px;
+}
+
+.hero-glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8) 50%, transparent);
+  pointer-events: none;
+}
+
+.hero-panel-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-panel-title {
+  font: 700 12.5px/1.25 'Montserrat', sans-serif;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+
+.hero-panel-meta {
+  font: 500 10px/1.2 'Montserrat', sans-serif;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.hero-panel-price-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: nowrap;
+}
+
+.hero-panel-price {
+  font: 700 13px/1 'Montserrat', sans-serif;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.hero-panel-price-old {
+  font: 500 10px/1 'Montserrat', sans-serif;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: line-through;
+}
+
+.hero-chip-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font: 700 8px/1 'Montserrat', sans-serif;
+  letter-spacing: 0.2px;
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+  border: 1px solid rgba(134, 239, 172, 0.35);
+}
+
+.hero-chip-tag--tour {
+  background: rgba(56, 189, 248, 0.25);
+  color: #bae6fd;
+  border-color: rgba(186, 230, 253, 0.35);
+}
+
+/* Pill CTA Button (Change 2) */
+.hero-pill-cta {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 88px;
+  padding: 0 12px;
+  border-radius: 100px;
+  background: var(--green);
+  color: #ffffff;
+  font: 700 11px/44px 'Montserrat', sans-serif;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(31, 122, 84, 0.35);
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hero-pill-cta:active {
+  transform: scale(0.94);
+  background: var(--green-dark);
+}
+
+/* Brand slide specific typography */
+.hero-brand-headline {
+  font: 600 24px/1.2 'Montserrat', sans-serif;
+  color: #ffffff;
+  margin: 0 0 3px 0;
+  letter-spacing: -0.6px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-brand-headline em {
+  font-weight: 700;
+  color: #a7f3d0;
+  font-style: normal;
+}
+
+/* ==========================================================================
+   Content Sheet Surface (Change 4)
+   Overlaps the bottom of the hero carousel by 28px
+   ========================================================================== */
+
+.content-sheet-surface {
+  position: relative;
+  z-index: 10;
+  /* Visual bottom-sheet overlap */
+  margin-top: -28px;
+  border-radius: 30px 30px 0 0;
+  background: var(--sheet-surface);
+  box-shadow: var(--sheet-shadow);
+  padding-top: 10px;
+  /* Extra bottom room for floating LiquidNavbar */
+  padding-bottom: 24px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.content-sheet-grabber {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sheet-grabber);
+  margin: 4px auto 14px;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Live Personal Stat Strip (Change 5)
+   ========================================================================== */
+
+.stat-strip-container {
+  margin: 0 16px 14px;
+  background: #f4f7f6;
+  border-radius: 16px;
+  display: flex;
+  align-items: stretch;
+  padding: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.stat-segment-btn {
+  flex: 1;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font: 600 11.5px/1.2 'Montserrat', sans-serif;
+  color: var(--navy);
+  padding: 6px 4px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background 0.15s ease, transform 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.stat-segment-btn:active {
+  background: rgba(31, 122, 84, 0.08);
+  transform: scale(0.97);
+}
+
+.stat-segment-btn + .stat-segment-btn {
+  border-left: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  color: var(--green);
+}
+
+.stat-icon--drop {
+  color: #ea580c;
+}
+
+.stat-icon--tour {
+  color: #0284c7;
+}
+
+.stat-segment-btn strong {
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ==========================================================================
+   Continue Where You Left Off Card (Change 5)
+   ========================================================================== */
+
+.continue-card {
+  margin: 0 16px 16px;
+  background: #f8fafc;
+  border: 1px solid #e7edf2;
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.continue-card:active {
+  transform: scale(0.985);
+  background: #f1f5f9;
+}
+
+.continue-thumb-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.continue-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.continue-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.continue-kicker {
+  font: 700 8px/1.2 'Montserrat', sans-serif;
+  letter-spacing: 0.9px;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.continue-title {
+  font: 600 12px/1.3 'Montserrat', sans-serif;
+  color: var(--navy);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.continue-meta {
+  font: 500 10.5px/1.2 'Montserrat', sans-serif;
+  color: var(--muted);
+}
+
+.continue-arrow {
+  flex-shrink: 0;
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+}
+
+/* ==========================================================================
+   Dark Mode Overrides
+   ========================================================================== */
+
+.dark-mode .hero-card-item {
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .stat-strip-container {
+  background: #162027;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.dark-mode .stat-segment-btn {
+  color: #dce6eb;
+}
+
+.dark-mode .stat-segment-btn strong {
+  color: #ffffff;
+}
+
+.dark-mode .stat-segment-btn + .stat-segment-btn {
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .stat-segment-btn:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dark-mode .continue-card {
+  background: #162027;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .continue-card:active {
+  background: #1a2730;
+}
+
+.dark-mode .continue-title {
+  color: #f1f5f9;
+}
+
+.dark-mode .continue-kicker {
+  color: #4ade80;
+}
+
+.dark-mode .continue-meta {
+  color: #94a3b8;
+}
+
+.dark-mode .continue-arrow {
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Reduced Motion Preferences
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-carousel-parallax-layer {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .hero-card-item {
+    transition: none !important;
+    transform: none !important;
+  }
+  .hero-pill-cta,
+  .hero-frosted-chip-btn,
+  .stat-segment-btn,
+  .continue-card {
+    transition: none !important;
+  }
+}
+
