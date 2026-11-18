@@ -1,36 +1,47 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowRight,
   Bell,
-  Calendar,
+  BellRing,
   Camera,
   Check,
   CheckCircle2,
   ChevronRight,
-  Compass,
   Download,
+  Eye,
+  EyeOff,
   ExternalLink,
   Heart,
+  KeyRound,
   LayoutDashboard,
+  Lock,
   LogOut,
   Mail,
   MapPin,
+  Moon,
+  Pencil,
   Phone,
+  Plus,
   Search,
-  Shield,
+  Settings,
   ShieldCheck,
-  Sliders,
-  SlidersHorizontal,
   Sparkles,
+  Sun,
   Trash2,
   Upload,
   User as UserIcon,
+  X,
 } from 'lucide-react'
-import { useAppStore, type User, type UserPreferences } from '../store/useAppStore'
-import { properties } from '../data/properties'
+import {
+  useAppStore,
+  type User,
+  type UserPreferences,
+  type PersonalizedAlert,
+} from '../store/useAppStore'
+import { properties, type Property } from '../data/properties'
 import { formatPrice } from './PropertyCard'
 import './UserDashboard.css'
 
@@ -40,119 +51,90 @@ interface UserDashboardProps {
   onContactBroker?: () => void
 }
 
-type DashboardTab = 'overview' | 'saved' | 'preferences' | 'profile' | 'notifications' | 'security'
+type DashboardTab = 'overview' | 'alerts' | 'saved' | 'settings' | 'security'
 
-// Preset Southwestern Arizona Avatars
 const PRESET_AVATARS = [
-  {
-    id: 'desert-explorer',
-    label: 'Desert Explorer',
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&h=300&q=80',
-  },
-  {
-    id: 'western-rancher',
-    label: 'Western Rancher',
-    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&h=300&q=80',
-  },
-  {
-    id: 'saguaro-trail',
-    label: 'Saguaro Trail',
-    url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&h=300&q=80',
-  },
-  {
-    id: 'arizona-sunset',
-    label: 'Arizona Sunset',
-    url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&h=300&q=80',
-  },
-  {
-    id: 'mountain-hiker',
-    label: 'Mountain Hiker',
-    url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300&q=80',
-  },
-  {
-    id: 'desert-homesteader',
-    label: 'Desert Homesteader',
-    url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&h=300&q=80',
-  },
+  { id: 'desert-explorer', label: 'Desert Explorer', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&h=300&q=80' },
+  { id: 'western-rancher', label: 'Western Rancher', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&h=300&q=80' },
+  { id: 'saguaro-trail', label: 'Saguaro Trail', url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&h=300&q=80' },
+  { id: 'arizona-sunset', label: 'Arizona Sunset', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&h=300&q=80' },
+  { id: 'mountain-hiker', label: 'Mountain Hiker', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300&q=80' },
+  { id: 'desert-homesteader', label: 'Desert Homesteader', url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&h=300&q=80' },
 ]
 
-const BUYER_TYPES = [
-  'Land Buyer & Homesteader',
-  'Ranch & Horse Property',
-  'Land Investment & Acreage',
-  'Country Residential Living',
-  'Commercial & Development',
-  'Vacation & Mountain Retreat',
-]
+const BUYER_TYPES = ['Land Buyer & Homesteader', 'Ranch & Horse Property', 'Land Investment & Acreage', 'Country Residential Living', 'Commercial & Development', 'Vacation & Mountain Retreat']
+const ACREAGE_OPTIONS = ['Any Acreage', 'Under 5 acres', '5 - 20 acres', '20 - 50 acres', '50 - 100+ acres']
+const BUDGET_OPTIONS = [{ label: 'Any Budget', value: 0 }, { label: 'Under $100k', value: 100000 }, { label: 'Under $250k', value: 250000 }, { label: 'Under $500k', value: 500000 }, { label: 'Under $1M', value: 1000000 }]
+const COUNTY_OPTIONS = ['Cochise', 'Pima', 'Santa Cruz', 'Graham', 'Pinal', 'Maricopa']
+const PROPERTY_TYPES = ['Desert Land', 'Country Homes', 'Equine / Horse Property', 'Investment & Commercial', 'Off-Grid Acreage']
+const MUST_HAVE_FEATURES = ['Mountain views', 'Private well / water rights', 'Electric on site / nearby', 'Horses allowed', 'Off-grid solar ready', 'Paved road access', 'Fenced perimeter']
 
-const ACREAGE_OPTIONS = [
-  'Any Acreage',
-  'Under 5 acres',
-  '5 - 20 acres',
-  '20 - 50 acres',
-  '50 - 100+ acres',
-]
-
-const BUDGET_OPTIONS = [
-  'Any Budget',
-  'Under $100k',
-  '$100k - $250k',
-  '$250k - $500k',
-  '$500k+',
-]
-
-const COUNTY_OPTIONS = [
-  'Cochise County',
-  'Pima County',
-  'Santa Cruz County',
-  'Maricopa County',
-  'Pinal County',
-  'Graham County',
-]
-
-const PROPERTY_TYPES = [
-  'Desert Land',
-  'Country Homes',
-  'Equine / Horse Property',
-  'Investment & Commercial',
-  'Off-Grid Acreage',
-]
-
-const MUST_HAVE_FEATURES = [
-  'Electric on site / nearby',
-  'Private well / water rights',
-  'Horses allowed',
-  'Mountain views',
-  'Paved road access',
-  'Off-grid solar ready',
-  'Fenced perimeter',
-]
+export function getAlertMatches(
+  criteria: { counties?: string[]; acreage?: string; maxPrice?: number; propertyTypes?: string[]; mustHaves?: string[] },
+  allProperties: Property[]
+): Property[] {
+  return allProperties.filter((property) => {
+    if (criteria.counties && criteria.counties.length > 0) {
+      const matchCounty = criteria.counties.some((c) => property.county.toLowerCase().includes(c.replace(' County', '').toLowerCase()))
+      if (!matchCounty) return false
+    }
+    if (criteria.maxPrice && criteria.maxPrice > 0 && property.price > criteria.maxPrice) return false
+    if (criteria.acreage && criteria.acreage !== 'Any Acreage') {
+      if (criteria.acreage === 'Under 5 acres' && property.acres >= 5) return false
+      if (criteria.acreage === '5 - 20 acres' && (property.acres < 5 || property.acres > 20)) return false
+      if (criteria.acreage === '20 - 50 acres' && (property.acres < 20 || property.acres > 50)) return false
+      if (criteria.acreage === '50 - 100+ acres' && property.acres < 50) return false
+    }
+    if (criteria.propertyTypes && criteria.propertyTypes.length > 0) {
+      const matchType = criteria.propertyTypes.some((t) => {
+        const clean = t.toLowerCase(); const pt = property.type.toLowerCase()
+        if (clean.includes('horse') || clean.includes('equine')) return property.features.some((f) => f.toLowerCase().includes('horse')) || pt.includes('ranch')
+        if (clean.includes('desert') || clean.includes('land')) return pt.includes('land') || pt.includes('desert')
+        if (clean.includes('country') || clean.includes('home')) return pt.includes('home') || property.title.toLowerCase().includes('home')
+        return pt.includes(clean)
+      })
+      if (!matchType) return false
+    }
+    if (criteria.mustHaves && criteria.mustHaves.length > 0) {
+      const matchFeature = criteria.mustHaves.some((feat) => {
+        const keyword = feat.toLowerCase().split(' ')[0]
+        return property.features.some((f) => f.toLowerCase().includes(keyword)) || property.description.toLowerCase().includes(keyword)
+      })
+      if (!matchFeature) return false
+    }
+    return true
+  })
+}
 
 export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker }: UserDashboardProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const currentUser = useAppStore((state) => state.currentUser)
-  const setCurrentUser = useAppStore((state) => state.setCurrentUser)
-  const updateCurrentUser = useAppStore((state) => state.updateCurrentUser)
-  const savedIds = useAppStore((state) => state.savedIds)
-  const removeSaved = useAppStore((state) => state.removeSaved)
-  const setFilters = useAppStore((state) => state.setFilters)
-  const recentSearches = useAppStore((state) => state.recentSearches)
-  const notificationsList = useAppStore((state) => state.notifications)
-  const markAllNotificationsRead = useAppStore((state) => state.markAllNotificationsRead)
+  const currentUser = useAppStore((s) => s.currentUser)
+  const setCurrentUser = useAppStore((s) => s.setCurrentUser)
+  const updateCurrentUser = useAppStore((s) => s.updateCurrentUser)
+  const savedIds = useAppStore((s) => s.savedIds)
+  const removeSaved = useAppStore((s) => s.removeSaved)
+  const setFilters = useAppStore((s) => s.setFilters)
+  const addNotification = useAppStore((s) => s.addNotification)
+  const darkMode = useAppStore((s) => s.darkMode)
+  const toggleDarkMode = useAppStore((s) => s.toggleDarkMode)
+  const personalizedAlerts = useAppStore((s) => s.personalizedAlerts || [])
+  const addPersonalizedAlert = useAppStore((s) => s.addPersonalizedAlert)
+  const updatePersonalizedAlert = useAppStore((s) => s.updatePersonalizedAlert)
+  const deletePersonalizedAlert = useAppStore((s) => s.deletePersonalizedAlert)
+  const togglePersonalizedAlertActive = useAppStore((s) => s.togglePersonalizedAlertActive)
 
-  // Active tab state (synced with URL ?tab=)
-  const tabParam = searchParams.get('tab') as DashboardTab | null
-  const activeTab: DashboardTab =
-    tabParam && ['overview', 'saved', 'preferences', 'profile', 'notifications', 'security'].includes(tabParam)
-      ? tabParam
-      : 'overview'
+  // Tab resolution
+  const tabParam = searchParams.get('tab')
+  let activeTab: DashboardTab = 'overview'
+  if (tabParam === 'alerts' || tabParam === 'preferences' || tabParam === 'notifications') activeTab = 'alerts'
+  else if (tabParam === 'saved') activeTab = 'saved'
+  else if (tabParam === 'settings' || tabParam === 'profile') activeTab = 'settings'
+  else if (tabParam === 'security' || tabParam === 'password') activeTab = 'security'
 
-  const handleTabChange = (tab: DashboardTab) => {
-    setSearchParams(tab === 'overview' ? {} : { tab })
-  }
+  const handleTabChange = (tab: DashboardTab) => setSearchParams(tab === 'overview' ? {} : { tab })
 
-  // Profile Form State
+  // Profile state
   const [name, setName] = useState(currentUser?.name || '')
   const [username, setUsername] = useState(currentUser?.username || '')
   const [email, setEmail] = useState(currentUser?.email || '')
@@ -160,28 +142,7 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
   const [avatar, setAvatar] = useState(currentUser?.avatar || '')
   const [location, setLocation] = useState(currentUser?.location || 'Southern Arizona')
   const [bio, setBio] = useState(currentUser?.bio || '')
-  const [buyerType, setBuyerType] = useState(
-    currentUser?.buyerType || currentUser?.preferences?.buyerType || 'Land Buyer & Homesteader'
-  )
-
-  // Preferences Form State
-  const [targetAcreage, setTargetAcreage] = useState(
-    currentUser?.preferences?.targetAcreage || '5 - 20 acres'
-  )
-  const [budgetRange, setBudgetRange] = useState(
-    currentUser?.preferences?.budgetRange || '$100k - $250k'
-  )
-  const [preferredCounties, setPreferredCounties] = useState<string[]>(
-    currentUser?.preferences?.preferredCounties || ['Cochise County']
-  )
-  const [preferredTypes, setPreferredTypes] = useState<string[]>(
-    currentUser?.preferences?.preferredTypes || ['Desert Land', 'Country Homes']
-  )
-  const [mustHaves, setMustHaves] = useState<string[]>(
-    currentUser?.preferences?.mustHaves || ['Mountain views', 'Off-grid solar ready']
-  )
-
-  // Notifications Form State
+  const [buyerType, setBuyerType] = useState(currentUser?.buyerType || currentUser?.preferences?.buyerType || 'Land Buyer & Homesteader')
   const [notificationsPrefs, setNotificationsPrefs] = useState({
     priceDrops: currentUser?.preferences?.notifications?.priceDrops ?? true,
     newListings: currentUser?.preferences?.notifications?.newListings ?? true,
@@ -189,35 +150,41 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
     marketReports: currentUser?.preferences?.notifications?.marketReports ?? false,
   })
 
-  // Password / Security state
+  // Password state
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordStatus, setPasswordStatus] = useState<{ message: string; isError: boolean } | null>(null)
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false)
+  const [showNewPwd, setShowNewPwd] = useState(false)
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false)
+  const [pwdStatus, setPwdStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [pwdError, setPwdError] = useState('')
 
-  // Feedback states
+  // UI state
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
-  const [filtersAppliedMessage, setFiltersAppliedMessage] = useState('')
+  const [settingsSaved, setSettingsSaved] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Sync state when currentUser changes (e.g. login or switch)
+  // Alert builder state
+  const [showBuilder, setShowBuilder] = useState(false)
+  const [editingAlertId, setEditingAlertId] = useState<string | null>(null)
+  const [alertTitle, setAlertTitle] = useState('')
+  const [alertCounties, setAlertCounties] = useState<string[]>(['Cochise'])
+  const [alertAcreage, setAlertAcreage] = useState('5 - 20 acres')
+  const [alertMaxPrice, setAlertMaxPrice] = useState(250000)
+  const [alertPropertyTypes, setAlertPropertyTypes] = useState<string[]>(['Desert Land', 'Country Homes'])
+  const [alertMustHaves, setAlertMustHaves] = useState<string[]>(['Mountain views'])
+  const [alertFrequency, setAlertFrequency] = useState<'instant' | 'daily' | 'weekly'>('instant')
+  const [alertDelivery, setAlertDelivery] = useState({ email: true, sms: true, inApp: true })
+
   useEffect(() => {
     if (currentUser) {
-      setName(currentUser.name || '')
-      setUsername(currentUser.username || currentUser.email.split('@')[0] || '')
-      setEmail(currentUser.email || '')
-      setPhone(currentUser.phone || '')
-      setAvatar(currentUser.avatar || '')
-      setLocation(currentUser.location || 'Southern Arizona')
-      setBio(currentUser.bio || '')
+      setName(currentUser.name || ''); setUsername(currentUser.username || currentUser.email.split('@')[0] || '')
+      setEmail(currentUser.email || ''); setPhone(currentUser.phone || ''); setAvatar(currentUser.avatar || '')
+      setLocation(currentUser.location || 'Southern Arizona'); setBio(currentUser.bio || '')
       setBuyerType(currentUser.buyerType || currentUser.preferences?.buyerType || 'Land Buyer & Homesteader')
-      setTargetAcreage(currentUser.preferences?.targetAcreage || '5 - 20 acres')
-      setBudgetRange(currentUser.preferences?.budgetRange || '$100k - $250k')
-      setPreferredCounties(currentUser.preferences?.preferredCounties || ['Cochise County'])
-      setPreferredTypes(currentUser.preferences?.preferredTypes || ['Desert Land', 'Country Homes'])
-      setMustHaves(currentUser.preferences?.mustHaves || ['Mountain views', 'Off-grid solar ready'])
       setNotificationsPrefs({
         priceDrops: currentUser.preferences?.notifications?.priceDrops ?? true,
         newListings: currentUser.preferences?.notifications?.newListings ?? true,
@@ -227,427 +194,195 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
     }
   }, [currentUser])
 
-  // Saved properties items
   const savedProperties = properties.filter((p) => savedIds.includes(p.id))
+  const liveBuilderMatches = useMemo(() => getAlertMatches({ counties: alertCounties, acreage: alertAcreage, maxPrice: alertMaxPrice, propertyTypes: alertPropertyTypes, mustHaves: alertMustHaves }, properties), [alertCounties, alertAcreage, alertMaxPrice, alertPropertyTypes, alertMustHaves])
+  const activeAlerts = personalizedAlerts.filter((a) => a.active)
+  const totalMatchesCount = useMemo(() => { const ids = new Set<string>(); activeAlerts.forEach((a) => getAlertMatches(a, properties).forEach((m) => ids.add(m.id))); return ids.size }, [activeAlerts])
 
-  // File upload and canvas compression
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please choose a valid image file.')
-      return
-    }
-
+    const file = e.target.files?.[0]; if (!file) return
+    if (!file.type.startsWith('image/')) { setErrorMessage('Please choose a valid image file.'); return }
     const reader = new FileReader()
     reader.onload = (event) => {
       const img = new Image()
       img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const maxDim = 240
-        let width = img.width
-        let height = img.height
-
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width)
-            width = maxDim
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height)
-            height = maxDim
-          }
-        }
-
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx?.drawImage(img, 0, 0, width, height)
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85)
-
-        setAvatar(compressedDataUrl)
-        setShowAvatarPicker(false)
-        setErrorMessage('')
+        const canvas = document.createElement('canvas'); const maxDim = 240
+        let w = img.width, h = img.height
+        if (w > h) { if (w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim } } else { if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim } }
+        canvas.width = w; canvas.height = h; canvas.getContext('2d')?.drawImage(img, 0, 0, w, h)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setAvatar(dataUrl); setShowAvatarPicker(false); setErrorMessage('')
+        updateCurrentUser({ avatar: dataUrl })
       }
       img.src = event.target?.result as string
     }
     reader.readAsDataURL(file)
   }
 
-  const toggleArrayItem = (list: string[], setList: (val: string[]) => void, item: string) => {
-    if (list.includes(item)) {
-      setList(list.filter((x) => x !== item))
-    } else {
-      setList([...list, item])
-    }
-  }
+  const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) =>
+    setList(list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
 
-  const handleSaveAll = () => {
+  const handleSaveProfile = () => {
     setErrorMessage('')
-    if (!name.trim()) {
-      setErrorMessage('Full name cannot be empty.')
-      return
-    }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErrorMessage('Please provide a valid email address.')
-      return
-    }
-
+    if (!name.trim()) { setErrorMessage('Full name cannot be empty.'); return }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrorMessage('Please provide a valid email.'); return }
     setSaveStatus('saving')
     setTimeout(() => {
-      const updatedPreferences: UserPreferences = {
-        buyerType,
-        targetAcreage,
-        budgetRange,
-        preferredCounties,
-        preferredTypes,
-        mustHaves,
-        notifications: notificationsPrefs,
-      }
-
-      const updatedUser: Partial<User> = {
-        name: name.trim(),
-        username: username.trim().replace(/^@/, ''),
-        email: email.trim(),
-        phone: phone.trim() || undefined,
-        avatar: avatar || undefined,
-        location: location.trim(),
-        bio: bio.trim(),
-        buyerType,
-        preferences: updatedPreferences,
-      }
-
-      updateCurrentUser(updatedUser)
-      setSaveStatus('saved')
-      onNotify?.('Profile updated successfully!')
-      setTimeout(() => setSaveStatus('idle'), 2500)
+      const prefs: UserPreferences = { ...(currentUser?.preferences || {}), buyerType, notifications: notificationsPrefs }
+      updateCurrentUser({ name: name.trim(), username: username.trim().replace(/^@/, ''), email: email.trim(), phone: phone.trim() || undefined, avatar: avatar || undefined, location: location.trim(), bio: bio.trim(), buyerType, preferences: prefs })
+      setSaveStatus('saved'); onNotify?.('Profile updated!'); setTimeout(() => setSaveStatus('idle'), 2200)
     }, 350)
   }
 
-  const handleApplyPreferencesToSearch = () => {
-    let minAcres = 0
-    let maxAcres = 500
-    if (targetAcreage === 'Under 5 acres') {
-      minAcres = 0
-      maxAcres = 5
-    } else if (targetAcreage === '5 - 20 acres') {
-      minAcres = 5
-      maxAcres = 20
-    } else if (targetAcreage === '20 - 50 acres') {
-      minAcres = 20
-      maxAcres = 50
-    } else if (targetAcreage === '50 - 100+ acres') {
-      minAcres = 50
-      maxAcres = 500
-    }
-
-    let minPrice = 0
-    let maxPrice = 1000000
-    if (budgetRange === 'Under $100k') {
-      minPrice = 0
-      maxPrice = 100000
-    } else if (budgetRange === '$100k - $250k') {
-      minPrice = 100000
-      maxPrice = 250000
-    } else if (budgetRange === '$250k - $500k') {
-      minPrice = 250000
-      maxPrice = 500000
-    } else if (budgetRange === '$500k+') {
-      minPrice = 500000
-      maxPrice = 2000000
-    }
-
-    const cleanedCounties = preferredCounties.map((c) => c.replace(' County', ''))
-
-    setFilters({
-      minPrice,
-      maxPrice,
-      minAcres,
-      maxAcres,
-      types: preferredTypes.map((t) => t.toLowerCase()),
-      counties: cleanedCounties,
-      cities: [],
-      features: mustHaves,
-    })
-
-    setFiltersAppliedMessage('Preferences applied to Search Filters!')
-    onNotify?.('Preferences synced with search filters')
-    setTimeout(() => setFiltersAppliedMessage(''), 3000)
+  const handleSaveNotifPrefs = () => {
+    const prefs: UserPreferences = { ...(currentUser?.preferences || {}), buyerType, notifications: notificationsPrefs }
+    updateCurrentUser({ buyerType, preferences: prefs }); setSettingsSaved(true); onNotify?.('Preferences saved!')
+    setTimeout(() => setSettingsSaved(false), 2200)
   }
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordStatus(null)
-
-    if (!currentPassword) {
-      setPasswordStatus({ message: 'Please enter your current password.', isError: true })
-      return
-    }
-    if (newPassword.length < 6) {
-      setPasswordStatus({ message: 'New password must be at least 6 characters.', isError: true })
-      return
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordStatus({ message: 'New passwords do not match.', isError: true })
-      return
-    }
-
-    setPasswordStatus({ message: 'Password updated successfully!', isError: false })
-    onNotify?.('Security password updated')
-    setCurrentPassword('')
-    setNewPassword('')
-    setConfirmPassword('')
+  const handleChangePassword = () => {
+    setPwdError('')
+    if (!currentPassword) { setPwdError('Enter your current password.'); return }
+    if (newPassword.length < 8) { setPwdError('New password must be at least 8 characters.'); return }
+    if (newPassword !== confirmPassword) { setPwdError("New passwords don't match."); return }
+    setPwdStatus('saving')
+    setTimeout(() => {
+      setPwdStatus('saved'); setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+      onNotify?.('Password updated!'); setTimeout(() => setPwdStatus('idle'), 2500)
+    }, 700)
   }
 
-  const handleExportProfile = () => {
+  const handleOpenNewAlert = () => {
+    setEditingAlertId(null); setAlertTitle(''); setAlertCounties(['Cochise']); setAlertAcreage('5 - 20 acres')
+    setAlertMaxPrice(250000); setAlertPropertyTypes(['Desert Land', 'Country Homes']); setAlertMustHaves(['Mountain views'])
+    setAlertFrequency('instant'); setAlertDelivery({ email: true, sms: true, inApp: true }); setShowBuilder(true)
+  }
+
+  const handleEditAlert = (a: PersonalizedAlert) => {
+    setEditingAlertId(a.id); setAlertTitle(a.title); setAlertCounties(a.counties); setAlertAcreage(a.acreage)
+    setAlertMaxPrice(a.maxPrice); setAlertPropertyTypes(a.propertyTypes); setAlertMustHaves(a.mustHaves)
+    setAlertFrequency(a.frequency); setAlertDelivery(a.delivery); setShowBuilder(true)
+  }
+
+  const handleSaveAlert = () => {
+    if (!alertTitle.trim()) { setErrorMessage('Alert needs a title.'); return }
+    const payload = { title: alertTitle.trim(), counties: alertCounties, acreage: alertAcreage, maxPrice: alertMaxPrice, propertyTypes: alertPropertyTypes, mustHaves: alertMustHaves, frequency: alertFrequency, delivery: alertDelivery }
+    if (editingAlertId) { updatePersonalizedAlert(editingAlertId, payload); onNotify?.(`Alert updated`) }
+    else { addPersonalizedAlert({ id: `alert-${Date.now()}`, ...payload, active: true, createdAt: 'Active' }); onNotify?.(`Alert created!`) }
+    setShowBuilder(false); setEditingAlertId(null); setErrorMessage('')
+  }
+
+  const handleViewMatches = (a: PersonalizedAlert) => {
+    let minAcres = 0, maxAcres = 500
+    if (a.acreage === 'Under 5 acres') maxAcres = 5
+    else if (a.acreage === '5 - 20 acres') { minAcres = 5; maxAcres = 20 }
+    else if (a.acreage === '20 - 50 acres') { minAcres = 20; maxAcres = 50 }
+    else if (a.acreage === '50 - 100+ acres') { minAcres = 50 }
+    setFilters({ minPrice: 0, maxPrice: a.maxPrice > 0 ? a.maxPrice : 1000000, minAcres, maxAcres, types: a.propertyTypes.map((t) => t.toLowerCase()), counties: a.counties.map((c) => c.replace(' County', '')), cities: [], features: a.mustHaves })
+    onNotify?.(`Filters applied for "${a.title}"`); navigate('/search')
+  }
+
+  const handleExport = () => {
     if (!currentUser) return
-    const profileData = {
-      name,
-      username,
-      email,
-      phone,
-      location,
-      buyerType,
-      memberSince: currentUser.memberSince,
-      preferences: {
-        targetAcreage,
-        budgetRange,
-        preferredCounties,
-        preferredTypes,
-        mustHaves,
-        notifications: notificationsPrefs,
-      },
-      savedPropertiesCount: savedIds.length,
-      savedPropertyIds: savedIds,
-      exportedAt: new Date().toISOString(),
-    }
-
-    const blob = new Blob([JSON.stringify(profileData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `arizona-life-profile-${username || 'user'}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    onNotify?.('Exported profile summary')
+    const data = { name, username, email, phone, location, buyerType, memberSince: currentUser.memberSince, personalizedAlerts, savedPropertyIds: savedIds, exportedAt: new Date().toISOString() }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })); a.download = `arizona-profile-${username || 'user'}.json`
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); onNotify?.('Profile exported')
   }
 
   const handleDemoLogin = () => {
-    const demoUser: User = {
-      name: 'Sarah Miller',
-      email: 'sarah.miller@example.com',
-      username: 'sarah_miller',
-      phone: '(602) 555-0142',
-      location: 'Tucson, AZ',
-      buyerType: 'Land Buyer & Homesteader',
-      bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.',
-      memberSince: 'Nov 2024',
-      preferences: {
-        buyerType: 'Land Buyer & Homesteader',
-        targetAcreage: '5 - 20 acres',
-        budgetRange: '$100k - $250k',
-        preferredCounties: ['Cochise County', 'Pima County'],
-        preferredTypes: ['Desert Land', 'Country Homes'],
-        mustHaves: ['Mountain views', 'Off-grid solar ready'],
-        notifications: {
-          priceDrops: true,
-          newListings: true,
-          tourReminders: true,
-          marketReports: false,
-        },
-      },
-    }
-    setCurrentUser(demoUser)
+    setCurrentUser({ name: 'Sarah Miller', email: 'sarah.miller@example.com', username: 'sarah_miller', phone: '(602) 555-0142', location: 'Tucson, AZ', buyerType: 'Land Buyer & Homesteader', bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.', memberSince: 'Nov 2024', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300&q=80', preferences: { buyerType: 'Land Buyer & Homesteader', targetAcreage: '5 - 20 acres', budgetRange: '$100k - $250k', preferredCounties: ['Cochise', 'Pima'], preferredTypes: ['Desert Land', 'Country Homes'], mustHaves: ['Mountain views', 'Off-grid solar ready'], notifications: { priceDrops: true, newListings: true, tourReminders: true, marketReports: false } } })
     onNotify?.('Signed in as Sarah Miller')
   }
 
-  const handleSignOut = () => {
-    setCurrentUser(null)
-    onNotify?.('Signed out successfully')
+  const getPwdStrength = (pwd: string) => {
+    if (!pwd) return { level: 0, label: '', color: '' }
+    let s = 0; if (pwd.length >= 8) s++; if (pwd.length >= 12) s++; if (/[A-Z]/.test(pwd)) s++; if (/[0-9]/.test(pwd)) s++; if (/[^A-Za-z0-9]/.test(pwd)) s++
+    if (s <= 1) return { level: 1, label: 'Weak', color: '#dc2626' }
+    if (s <= 3) return { level: 2, label: 'Fair', color: '#d97706' }
+    if (s <= 4) return { level: 3, label: 'Good', color: '#1f7a54' }
+    return { level: 4, label: 'Strong', color: '#059669' }
   }
+  const pwdStrength = getPwdStrength(newPassword)
 
-  // Initials for avatar fallback
-  const initials = currentUser?.name
-    ? currentUser.name
-        .split(' ')
-        .filter(Boolean)
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase()
-    : 'AZ'
+  const initials = currentUser?.name ? currentUser.name.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase() : 'AZ'
 
-  // ============================================
-  // GUEST STATE (Not Signed In)
-  // ============================================
+  // ── GUEST ──────────────────────────────────────
   if (!currentUser) {
     return (
       <div className="dashboard-container">
         <div className="dashboard-guest-hero">
-          <div className="dashboard-guest-icon-badge">
-            <UserIcon size={32} />
-          </div>
-          <h1>User Dashboard</h1>
-          <p className="dashboard-guest-sub">
-            Your personalized client portal for Southern Arizona land, homesteads, and ranches.
-          </p>
-
+          <div className="dashboard-guest-icon-badge"><UserIcon size={32} /></div>
+          <h1>My Dashboard</h1>
+          <p className="dashboard-guest-sub">Your personalized portal for Southern Arizona land, homesteads, and ranches.</p>
           <div className="dashboard-guest-features-card">
             <h3>Everything in one place</h3>
             <ul>
-              <li>
-                <CheckCircle2 size={16} className="feature-check" />
-                <span>Save and compare properties across devices</span>
-              </li>
-              <li>
-                <CheckCircle2 size={16} className="feature-check" />
-                <span>Receive price-drop and new listing acreage alerts</span>
-              </li>
-              <li>
-                <CheckCircle2 size={16} className="feature-check" />
-                <span>Customize your homesteading &amp; budget criteria</span>
-              </li>
-              <li>
-                <CheckCircle2 size={16} className="feature-check" />
-                <span>Direct line to local Southern Arizona broker Rick Frank</span>
-              </li>
+              <li><CheckCircle2 size={16} className="feature-check" /><span>Personalized alerts for price drops & acreage</span></li>
+              <li><CheckCircle2 size={16} className="feature-check" /><span>Save & compare favorite properties</span></li>
+              <li><CheckCircle2 size={16} className="feature-check" /><span>Direct line to broker Rick Frank</span></li>
             </ul>
           </div>
-
           <div className="dashboard-guest-actions">
-            <button
-              type="button"
-              className="dashboard-primary-btn"
-              onClick={onAuthRequest}
-            >
-              Sign In or Register <ArrowRight size={16} />
-            </button>
-            <button
-              type="button"
-              className="dashboard-secondary-btn"
-              onClick={handleDemoLogin}
-            >
-              <Sparkles size={16} /> Explore with Demo Account (Sarah Miller)
-            </button>
+            <button type="button" className="db-primary-btn" onClick={onAuthRequest}>Sign In or Register <ArrowRight size={16} /></button>
+            <button type="button" className="db-secondary-btn" onClick={handleDemoLogin}><Sparkles size={15} /> Try Demo Account</button>
           </div>
         </div>
       </div>
     )
   }
 
-  // ============================================
-  // LOGGED IN USER DASHBOARD
-  // ============================================
+  // ── LOGGED IN ──────────────────────────────────
+  const TABS: { id: DashboardTab; icon: React.ReactNode; label: string; badge?: number }[] = [
+    { id: 'overview', icon: <LayoutDashboard size={14} />, label: 'Overview' },
+    { id: 'saved', icon: <Heart size={14} />, label: 'Saved', badge: savedIds.length || undefined },
+    { id: 'alerts', icon: <Bell size={14} />, label: 'Alerts', badge: activeAlerts.length || undefined },
+    { id: 'settings', icon: <Settings size={14} />, label: 'Settings' },
+    { id: 'security', icon: <ShieldCheck size={14} />, label: 'Security' },
+  ]
+
   return (
     <div className="dashboard-container">
-      {/* Profile Hero Header */}
-      <div className="dashboard-hero">
-        <div className="dashboard-hero-bg" />
-        <div className="dashboard-hero-content">
-          <div className="dashboard-avatar-section">
-            <div className="dashboard-avatar-wrapper">
-              {avatar ? (
-                <img src={avatar} alt={name} className="dashboard-avatar-img" />
-              ) : (
-                <div className="dashboard-avatar-placeholder">{initials}</div>
-              )}
-              <button
-                type="button"
-                className="dashboard-avatar-cam-btn"
-                onClick={() => setShowAvatarPicker((v) => !v)}
-                title="Change profile photo"
-                aria-label="Change profile photo"
-              >
-                <Camera size={14} />
-              </button>
-            </div>
-          </div>
 
-          <div className="dashboard-hero-details">
-            <div className="dashboard-hero-title-row">
+      {/* ── HERO ── */}
+      <div className="db-hero">
+        <div className="db-hero-bg" />
+        <div className="db-hero-content">
+          <div className="db-avatar-wrap">
+            {avatar ? <img src={avatar} alt={name} className="db-avatar-img" /> : <div className="db-avatar-placeholder">{initials}</div>}
+            <button type="button" className="db-avatar-cam" onClick={() => setShowAvatarPicker((v) => !v)} title="Change photo">
+              <Camera size={11} />
+            </button>
+          </div>
+          <div className="db-hero-info">
+            <div className="db-hero-name-row">
               <h2>{name}</h2>
-              <span className="dashboard-verified-pill">
-                <Sparkles size={11} /> Verified Buyer
-              </span>
+              <span className="db-verified-pill"><Sparkles size={9} /> Verified</span>
             </div>
-            <p className="dashboard-hero-sub">
-              <span>@{username || 'buyer'}</span> · <MapPin size={12} /> {location || 'Southern Arizona'}
-            </p>
-            <div className="dashboard-hero-tags">
-              <span className="dashboard-hero-tag">{buyerType}</span>
-              <span className="dashboard-hero-date">Member since {currentUser.memberSince || 'Today'}</span>
+            <p className="db-hero-sub"><span>@{username || 'buyer'}</span><span className="db-dot">·</span><MapPin size={11} />{location || 'Southern Arizona'}</p>
+            <div className="db-hero-tags">
+              <span className="db-hero-tag">{buyerType}</span>
+              <span className="db-hero-date">Member since {currentUser.memberSince || 'Today'}</span>
             </div>
           </div>
+          <button type="button" className="db-hero-edit" onClick={() => handleTabChange('settings')} title="Edit profile"><Pencil size={13} /></button>
         </div>
       </div>
 
-      {/* Avatar Picker Modal / Dropdown */}
+      {/* ── AVATAR PICKER ── */}
       <AnimatePresence>
         {showAvatarPicker && (
-          <motion.div
-            className="dashboard-avatar-picker"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            <div className="dashboard-picker-head">
-              <h4>Choose Profile Photo</h4>
-              <button
-                type="button"
-                className="dashboard-picker-close"
-                onClick={() => setShowAvatarPicker(false)}
-              >
-                ✕
-              </button>
+          <motion.div className="db-avatar-picker" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <div className="db-picker-head"><h4>Choose Profile Photo</h4><button type="button" className="db-picker-close" onClick={() => setShowAvatarPicker(false)}><X size={15} /></button></div>
+            <div className="db-picker-actions">
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden-file-input" onChange={handleFileUpload} />
+              <button type="button" className="db-upload-btn" onClick={() => fileInputRef.current?.click()}><Upload size={12} /> Upload</button>
+              {avatar && <button type="button" className="db-remove-btn" onClick={() => { setAvatar(''); updateCurrentUser({ avatar: undefined }); setShowAvatarPicker(false) }}><Trash2 size={12} /> Remove</button>}
             </div>
-
-            <div className="dashboard-picker-actions">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden-file-input"
-                onChange={handleFileUpload}
-              />
-              <button
-                type="button"
-                className="dashboard-upload-btn"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload size={14} /> Upload Custom Photo
-              </button>
-              {avatar && (
-                <button
-                  type="button"
-                  className="dashboard-remove-btn"
-                  onClick={() => {
-                    setAvatar('')
-                    setShowAvatarPicker(false)
-                  }}
-                >
-                  <Trash2 size={14} /> Remove Photo
-                </button>
-              )}
-            </div>
-
-            <span className="dashboard-picker-presets-label">Southwestern Arizona Presets:</span>
-            <div className="dashboard-presets-grid">
-              {PRESET_AVATARS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  className={`dashboard-preset-btn ${avatar === preset.url ? 'is-selected' : ''}`}
-                  onClick={() => {
-                    setAvatar(preset.url)
-                    setShowAvatarPicker(false)
-                  }}
-                >
-                  <img src={preset.url} alt={preset.label} />
-                  <span>{preset.label}</span>
+            <span className="db-presets-label">Arizona Presets:</span>
+            <div className="db-presets-grid">
+              {PRESET_AVATARS.map((p) => (
+                <button key={p.id} type="button" className={`db-preset-btn ${avatar === p.url ? 'selected' : ''}`} onClick={() => { setAvatar(p.url); updateCurrentUser({ avatar: p.url }); setShowAvatarPicker(false) }}>
+                  <img src={p.url} alt={p.label} /><span>{p.label}</span>
                 </button>
               ))}
             </div>
@@ -655,920 +390,382 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
         )}
       </AnimatePresence>
 
-     
-
-      {/* Dashboard Tab Navigation Bar */}
-      <div className="dashboard-tabs-bar" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'overview'}
-          className={`dashboard-tab-btn ${activeTab === 'overview' ? 'is-active' : ''}`}
-          onClick={() => handleTabChange('overview')}
-        >
-          <LayoutDashboard size={14} />
-          <span>Overview</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'saved'}
-          className={`dashboard-tab-btn ${activeTab === 'saved' ? 'is-active' : ''}`}
-          onClick={() => handleTabChange('saved')}
-        >
-          <Heart size={14} />
-          <span>Saved Places</span>
-          {savedIds.length > 0 && <span className="tab-counter">{savedIds.length}</span>}
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'preferences'}
-          className={`dashboard-tab-btn ${activeTab === 'preferences' ? 'is-active' : ''}`}
-          onClick={() => handleTabChange('preferences')}
-        >
-          <SlidersHorizontal size={14} />
-          <span>Preferences</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'profile'}
-          className={`dashboard-tab-btn ${activeTab === 'profile' ? 'is-active' : ''}`}
-          onClick={() => handleTabChange('profile')}
-        >
-          <UserIcon size={14} />
-          <span>Profile Info</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'notifications'}
-          className={`dashboard-tab-btn ${activeTab === 'notifications' ? 'is-active' : ''}`}
-          onClick={() => handleTabChange('notifications')}
-        >
-          <Bell size={14} />
-          <span>Alerts</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'security'}
-          className={`dashboard-tab-btn ${activeTab === 'security' ? 'is-active' : ''}`}
-          onClick={() => handleTabChange('security')}
-        >
-          <Shield size={14} />
-          <span>Security</span>
-        </button>
+      {/* ── TAB BAR ── */}
+      <div className="db-tabs" role="tablist">
+        {TABS.map((t) => (
+          <button key={t.id} type="button" role="tab" aria-selected={activeTab === t.id}
+            className={`db-tab ${activeTab === t.id ? 'active' : ''}`} onClick={() => handleTabChange(t.id)}>
+            {t.icon}<span>{t.label}</span>
+            {t.badge !== undefined && <span className="db-tab-badge">{t.badge}</span>}
+          </button>
+        ))}
       </div>
 
-      {/* Feedback alerts */}
+      {/* ── ERROR BANNER ── */}
       {errorMessage && (
-        <div className="dashboard-alert is-error">
-          <AlertCircle size={15} />
-          <span>{errorMessage}</span>
-        </div>
-      )}
-      {filtersAppliedMessage && (
-        <div className="dashboard-alert is-success">
-          <CheckCircle2 size={15} />
-          <span>{filtersAppliedMessage}</span>
+        <div className="db-banner error">
+          <AlertCircle size={14} /><span>{errorMessage}</span>
+          <button type="button" onClick={() => setErrorMessage('')}><X size={13} /></button>
         </div>
       )}
 
-      {/* ========================================================
-          TAB 1: OVERVIEW
-      ======================================================== */}
+      {/* ══════════════════════════════════════════
+          OVERVIEW
+      ══════════════════════════════════════════ */}
       {activeTab === 'overview' && (
-        <div className="dashboard-tab-pane">
-          {/* Quick Welcome Banner */}
-          <div className="dashboard-welcome-card">
-            <div>
-              <h3>Good day, {name.split(' ')[0]}</h3>
-              <p>
-                Your Arizona land dashboard is active. You have <strong>{savedIds.length}</strong> shortlisted places
-                and personalized alerts set for <strong>{preferredCounties.join(', ')}</strong>.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="dashboard-inline-action-btn"
-              onClick={() => navigate('/search')}
-            >
-              Browse Land <ArrowRight size={14} />
-            </button>
+        <div className="db-pane">
+          {/* Stats */}
+          <div className="db-stats">
+            {[
+              { icon: <Heart size={15} />, value: savedIds.length, label: 'Saved', color: 'red', action: () => handleTabChange('saved') },
+              { icon: <BellRing size={15} />, value: activeAlerts.length, label: 'Alerts', color: 'green', action: () => handleTabChange('alerts') },
+              { icon: <Search size={15} />, value: totalMatchesCount, label: 'Matches', color: 'blue', action: () => handleTabChange('alerts') },
+              { icon: <Sparkles size={15} />, value: 'Rick', label: 'Broker', color: 'amber', action: onContactBroker },
+            ].map(({ icon, value, label, color, action }) => (
+              <div key={label} className={`db-stat db-stat--${color}`} role="button" tabIndex={0} onClick={action as () => void}>
+                <div className="db-stat-icon">{icon}</div>
+                <strong>{value}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Quick Actions Grid */}
-          <div className="dashboard-actions-grid">
-            <div
-              className="dashboard-action-tile"
-              onClick={() => navigate('/search')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  navigate('/search')
-                }
-              }}
-            >
-              <div className="action-tile-icon green">
-                <Search size={18} />
-              </div>
-              <div className="action-tile-body">
-                <strong>Explore Listings</strong>
-                <span>Search all active Arizona parcels</span>
-              </div>
-              <ChevronRight size={16} className="action-arrow" />
-            </div>
-
-            <div
-              className="dashboard-action-tile"
-              onClick={() => handleTabChange('saved')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleTabChange('saved')
-                }
-              }}
-            >
-              <div className="action-tile-icon red">
-                <Heart size={18} />
-              </div>
-              <div className="action-tile-body">
-                <strong>Saved Properties ({savedIds.length})</strong>
-                <span>Review your favorite acreage</span>
-              </div>
-              <ChevronRight size={16} className="action-arrow" />
-            </div>
-
-            <div
-              className="dashboard-action-tile"
-              onClick={() => handleTabChange('preferences')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleTabChange('preferences')
-                }
-              }}
-            >
-              <div className="action-tile-icon blue">
-                <Sliders size={18} />
-              </div>
-              <div className="action-tile-body">
-                <strong>Search Criteria</strong>
-                <span>{targetAcreage} · {budgetRange}</span>
-              </div>
-              <ChevronRight size={16} className="action-arrow" />
-            </div>
-
-            <div
-              className="dashboard-action-tile"
-              onClick={() => navigate('/map')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  navigate('/map')
-                }
-              }}
-            >
-              <div className="action-tile-icon amber">
-                <Compass size={18} />
-              </div>
-              <div className="action-tile-body">
-                <strong>Interactive Map</strong>
-                <span>Inspect boundaries &amp; terrain</span>
-              </div>
-              <ChevronRight size={16} className="action-arrow" />
-            </div>
-
-            <div
-              className="dashboard-action-tile"
-              onClick={() => navigate('/contact')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  navigate('/contact')
-                }
-              }}
-            >
-              <div className="action-tile-icon green">
-                <Calendar size={18} />
-              </div>
-              <div className="action-tile-body">
-                <strong>Schedule a Tour</strong>
-                <span>Contact Broker Rick Frank to schedule a showing</span>
-              </div>
-              <ChevronRight size={16} className="action-arrow" />
-            </div>
+          {/* Quick actions */}
+          <div className="db-quick-row">
+            <button type="button" className="db-quick primary" onClick={() => navigate('/search')}><Search size={14} /> Browse</button>
+            <button type="button" className="db-quick" onClick={() => { handleTabChange('alerts'); handleOpenNewAlert() }}><Plus size={14} /> Alert</button>
+            <button type="button" className="db-quick" onClick={() => handleTabChange('settings')}><Settings size={14} /> Settings</button>
+            <button type="button" className="db-quick" onClick={() => handleTabChange('security')}><ShieldCheck size={14} /> Security</button>
           </div>
 
-          {/* Saved Places Preview Section */}
-          <div className="dashboard-section-card">
-            <div className="dashboard-card-head">
-              <div>
-                <h4>Saved Places ({savedProperties.length})</h4>
-                <p>Properties you bookmarked for later review</p>
-              </div>
-              <button
-                type="button"
-                className="dashboard-card-link-btn"
-                onClick={() => handleTabChange('saved')}
-              >
-                View all ({savedProperties.length}) <ChevronRight size={14} />
-              </button>
+          {/* Alerts snapshot */}
+          <div className="db-card">
+            <div className="db-card-head">
+              <div><h4>Listing Alerts</h4><p>Get notified when parcels match your criteria</p></div>
+              <button type="button" className="db-link" onClick={() => handleTabChange('alerts')}>Manage ({personalizedAlerts.length}) <ChevronRight size={12} /></button>
             </div>
-
-            {savedProperties.length > 0 ? (
-              <div className="dashboard-saved-preview-list">
-                {savedProperties.slice(0, 3).map((property) => (
-                  <div key={property.id} className="dashboard-saved-row">
-                    <img
-                      src={property.images[0]}
-                      alt={property.title}
-                      className="saved-row-thumb"
-                      onClick={() => navigate(`/property/${property.id}`)}
-                    />
-                    <div
-                      className="saved-row-details"
-                      onClick={() => navigate(`/property/${property.id}`)}
-                    >
-                      <span className="saved-row-price">{formatPrice(property.price)}</span>
-                      <strong className="saved-row-title">{property.title}</strong>
-                      <span className="saved-row-meta">
-                        {property.acres} acres · {property.city}, {property.county} County
-                      </span>
+            {personalizedAlerts.length > 0 ? (
+              <div className="db-alert-rows">
+                {personalizedAlerts.slice(0, 2).map((a) => {
+                  const matches = getAlertMatches(a, properties)
+                  return (
+                    <div key={a.id} className="db-alert-row">
+                      <div className={`db-dot-indicator ${a.active ? 'on' : 'off'}`} />
+                      <div className="db-alert-row-info"><strong>{a.title}</strong><span>{a.counties.join(', ')} · {a.acreage}</span></div>
+                      <button type="button" className="db-matches-pill" onClick={() => handleViewMatches(a)}>{matches.length} matches <ChevronRight size={11} /></button>
                     </div>
-                    <button
-                      type="button"
-                      className="saved-row-remove-btn"
-                      onClick={() => {
-                        removeSaved(property.id)
-                        onNotify?.('Removed from saved places')
-                      }}
-                      title="Remove from saved"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
-              <div className="dashboard-empty-box">
-                <Heart size={24} className="empty-icon" />
-                <p>No saved properties yet.</p>
-                <button
-                  type="button"
-                  className="dashboard-pill-btn"
-                  onClick={() => navigate('/search')}
-                >
-                  Explore Arizona listings
-                </button>
+              <div className="db-empty-mini">
+                <Bell size={18} /><p>No alerts yet</p>
+                <button type="button" className="db-pill" onClick={() => { handleTabChange('alerts'); handleOpenNewAlert() }}><Plus size={11} /> First alert</button>
               </div>
             )}
           </div>
 
-          {/* Assigned Local Broker Card */}
-          <div className="dashboard-broker-card">
-            <div className="broker-photo-wrap">
-              <div className="broker-avatar-pill">RF</div>
-            </div>
-            <div className="broker-info">
-              <span className="broker-badge">Your Dedicated Arizona Broker</span>
+          {/* Broker */}
+          <div className="db-broker">
+            <div className="db-broker-av">RF</div>
+            <div className="db-broker-body">
+              <span className="db-broker-badge">Your Dedicated Broker</span>
               <h4>Rick Frank</h4>
-              <p className="broker-office">
-                Southern Arizona Specialist · United Country Real Estate
-              </p>
-              <p className="broker-note">
-                "Ready to walk land boundaries, check water tables, or schedule a desert parcel tour."
-              </p>
-              <div className="broker-actions">
-                <a href="tel:+15204033903" className="broker-call-btn">
-                  <Phone size={13} /> Call (520) 403-3903
-                </a>
-                {onContactBroker && (
-                  <button
-                    type="button"
-                    className="broker-msg-btn"
-                    onClick={onContactBroker}
-                  >
-                    <Mail size={13} /> Send Inquiry
-                  </button>
-                )}
+              <p>Southern Arizona Specialist · United Country Real Estate</p>
+              <p className="db-broker-quote">"Direct help with boundary lines, water wells & parcel showings."</p>
+              <div className="db-broker-btns">
+                <a href="tel:+15204033903" className="db-broker-call"><Phone size={12} /> (520) 403-3903</a>
+                {onContactBroker && <button type="button" className="db-broker-msg" onClick={onContactBroker}><Mail size={12} /> Message</button>}
               </div>
             </div>
           </div>
-
-          {/* Recent Searches */}
-          {recentSearches.length > 0 && (
-            <div className="dashboard-section-card">
-              <div className="dashboard-card-head">
-                <div>
-                  <h4>Recent Searches</h4>
-                  <p>Quick shortcuts to your previous searches</p>
-                </div>
-              </div>
-              <div className="dashboard-search-chips">
-                {recentSearches.map((search) => (
-                  <button
-                    key={search}
-                    type="button"
-                    className="dashboard-search-chip"
-                    onClick={() => navigate(`/search`)}
-                  >
-                    <Search size={12} /> {search}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
-      {/* ========================================================
-          TAB 2: SAVED PLACES
-      ======================================================== */}
+      {/* ══════════════════════════════════════════
+          SAVED
+      ══════════════════════════════════════════ */}
       {activeTab === 'saved' && (
-        <div className="dashboard-tab-pane">
-          <div className="dashboard-pane-header">
-            <div>
-              <h3>Saved Properties</h3>
-              <p>You have {savedProperties.length} saved Arizona parcels</p>
-            </div>
-            {savedProperties.length > 0 && (
-              <button
-                type="button"
-                className="dashboard-secondary-btn"
-                onClick={() => navigate('/saved')}
-              >
-                Compare Tool <ExternalLink size={14} />
-              </button>
-            )}
+        <div className="db-pane">
+          <div className="db-pane-hd">
+            <div><h3>Saved Properties</h3><p>{savedProperties.length} shortlisted parcels & homesteads</p></div>
+            {savedProperties.length > 0 && <button type="button" className="db-secondary-btn" onClick={() => navigate('/saved')}>Compare <ExternalLink size={12} /></button>}
           </div>
-
           {savedProperties.length > 0 ? (
-            <div className="dashboard-full-saved-grid">
-              {savedProperties.map((property) => (
-                <div key={property.id} className="dashboard-property-card">
-                  <div
-                    className="dashboard-property-thumb-wrap"
-                    onClick={() => navigate(`/property/${property.id}`)}
-                  >
-                    <img src={property.images[0]} alt={property.title} />
-                    <span className="dashboard-card-price">{formatPrice(property.price)}</span>
+            <div className="db-saved-grid">
+              {savedProperties.map((p) => (
+                <div key={p.id} className="db-prop-card">
+                  <div className="db-prop-thumb" onClick={() => navigate(`/property/${p.id}`)}>
+                    <img src={p.images[0]} alt={p.title} />
+                    <span className="db-price-pill">{formatPrice(p.price)}</span>
                   </div>
-                  <div className="dashboard-property-card-body">
-                    <strong
-                      className="dashboard-card-title"
-                      onClick={() => navigate(`/property/${property.id}`)}
-                    >
-                      {property.title}
-                    </strong>
-                    <div className="dashboard-card-meta">
-                      <span>{property.acres} acres</span>
-                      <span>·</span>
-                      <span>{property.type}</span>
-                      <span>·</span>
-                      <span>{property.city}, AZ</span>
-                    </div>
-                    <div className="dashboard-card-tags">
-                      {property.features.slice(0, 2).map((feat) => (
-                        <span key={feat} className="mini-tag">
-                          {feat}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="dashboard-card-actions">
-                      <button
-                        type="button"
-                        className="dashboard-view-listing-btn"
-                        onClick={() => navigate(`/property/${property.id}`)}
-                      >
-                        View Details <ArrowRight size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        className="dashboard-card-remove-btn"
-                        onClick={() => {
-                          removeSaved(property.id)
-                          onNotify?.('Removed from saved places')
-                        }}
-                        title="Remove from saved"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                  <div className="db-prop-body">
+                    <strong className="db-prop-name" onClick={() => navigate(`/property/${p.id}`)}>{p.title}</strong>
+                    <div className="db-prop-meta"><span>{p.acres} ac</span><span>·</span><span>{p.type}</span><span>·</span><span>{p.city}, AZ</span></div>
+                    <div className="db-prop-feats">{p.features.slice(0, 2).map((f) => <span key={f} className="db-feat-tag">{f}</span>)}</div>
+                    <div className="db-prop-actions">
+                      <button type="button" className="db-view-btn" onClick={() => navigate(`/property/${p.id}`)}>View <ArrowRight size={12} /></button>
+                      <button type="button" className="db-rm-btn" onClick={() => { removeSaved(p.id); onNotify?.('Removed') }} title="Remove"><Trash2 size={13} /></button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="dashboard-empty-full">
-              <Heart size={36} className="empty-icon" />
-              <h3>Your shortlisted places will appear here</h3>
-              <p>
-                Browse Southern Arizona acreage, ranches, and country homes. Tap the heart icon to save
-                properties for your portfolio.
-              </p>
-              <button
-                type="button"
-                className="dashboard-primary-btn"
-                onClick={() => navigate('/search')}
-              >
-                Find Arizona Properties
-              </button>
+            <div className="db-empty">
+              <Heart size={36} /><h3>No saved properties yet</h3>
+              <p>Browse Arizona acreage, ranches, and country homes. Tap ♥ to save any listing.</p>
+              <button type="button" className="db-primary-btn" onClick={() => navigate('/search')}>Find Properties <ArrowRight size={14} /></button>
             </div>
           )}
         </div>
       )}
 
-      {/* ========================================================
-          TAB 3: BUYING PREFERENCES
-      ======================================================== */}
-      {activeTab === 'preferences' && (
-        <div className="dashboard-tab-pane">
-          <div className="dashboard-pane-header">
-            <div>
-              <h3>Buying Preferences &amp; Criteria</h3>
-              <p>Tell us what land you seek so we can tailor listing alerts and filters.</p>
-            </div>
-            <button
-              type="button"
-              className="dashboard-sync-btn"
-              onClick={handleApplyPreferencesToSearch}
-            >
-              <Sliders size={14} /> Apply to Search Filters
-            </button>
+      {/* ══════════════════════════════════════════
+          ALERTS
+      ══════════════════════════════════════════ */}
+      {activeTab === 'alerts' && (
+        <div className="db-pane">
+          <div className="db-pane-hd">
+            <div><h3>Personalized Alerts</h3><p>Get notified instantly when land matches your criteria.</p></div>
+            <button type="button" className="db-primary-btn" onClick={handleOpenNewAlert}><Plus size={13} /> New Alert</button>
           </div>
 
-          <div className="dashboard-card-box">
-            <h4>Buyer Persona / Goal</h4>
-            <div className="dashboard-pill-options">
-              {BUYER_TYPES.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  className={`option-chip ${buyerType === type ? 'is-selected' : ''}`}
-                  onClick={() => setBuyerType(type)}
-                >
-                  {type}
-                </button>
+          {/* Builder */}
+          <AnimatePresence>
+            {showBuilder && (
+              <motion.div className="db-builder" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                <div className="db-builder-hd">
+                  <div><span className="db-builder-tag"><BellRing size={11} /> {editingAlertId ? 'Edit Alert' : 'New Alert'}</span><h4>{editingAlertId ? 'Update Criteria' : 'Set Criteria'}</h4></div>
+                  <button type="button" className="db-builder-close" onClick={() => { setShowBuilder(false); setEditingAlertId(null) }}><X size={15} /></button>
+                </div>
+                <div className="db-builder-bd">
+                  <div className="db-field"><label htmlFor="alert-name">Alert Name *</label><input id="alert-name" type="text" value={alertTitle} onChange={(e) => setAlertTitle(e.target.value)} placeholder="e.g. Cochise 10+ Acres with Views" className="db-input" /></div>
+                  <div className="db-field"><label>Counties</label><div className="db-chips">{COUNTY_OPTIONS.map((c) => <button key={c} type="button" className={`db-chip ${alertCounties.includes(c) ? 'on' : ''}`} onClick={() => toggleItem(alertCounties, setAlertCounties, c)}>{alertCounties.includes(c) && <Check size={10} />}{c}</button>)}</div></div>
+                  <div className="db-field"><label>Acreage</label><div className="db-chips">{ACREAGE_OPTIONS.map((o) => <button key={o} type="button" className={`db-chip ${alertAcreage === o ? 'on' : ''}`} onClick={() => setAlertAcreage(o)}>{o}</button>)}</div></div>
+                  <div className="db-field"><label>Max Budget</label><div className="db-chips">{BUDGET_OPTIONS.map((b) => <button key={b.label} type="button" className={`db-chip ${alertMaxPrice === b.value ? 'on' : ''}`} onClick={() => setAlertMaxPrice(b.value)}>{b.label}</button>)}</div></div>
+                  <div className="db-field"><label>Property Types</label><div className="db-chips">{PROPERTY_TYPES.map((pt) => <button key={pt} type="button" className={`db-chip ${alertPropertyTypes.includes(pt) ? 'on' : ''}`} onClick={() => toggleItem(alertPropertyTypes, setAlertPropertyTypes, pt)}>{alertPropertyTypes.includes(pt) && <Check size={10} />}{pt}</button>)}</div></div>
+                  <div className="db-field"><label>Must-Have Features</label><div className="db-chips">{MUST_HAVE_FEATURES.map((f) => <button key={f} type="button" className={`db-chip ${alertMustHaves.includes(f) ? 'on' : ''}`} onClick={() => toggleItem(alertMustHaves, setAlertMustHaves, f)}>{alertMustHaves.includes(f) && <Check size={10} />}{f}</button>)}</div></div>
+                  <div className="db-builder-split">
+                    <div className="db-field"><label>Frequency</label><div className="db-chips">
+                      <button type="button" className={`db-chip ${alertFrequency === 'instant' ? 'on' : ''}`} onClick={() => setAlertFrequency('instant')}>⚡ Instant</button>
+                      <button type="button" className={`db-chip ${alertFrequency === 'daily' ? 'on' : ''}`} onClick={() => setAlertFrequency('daily')}>📅 Daily</button>
+                      <button type="button" className={`db-chip ${alertFrequency === 'weekly' ? 'on' : ''}`} onClick={() => setAlertFrequency('weekly')}>📊 Weekly</button>
+                    </div></div>
+                    <div className="db-field"><label>Channels</label><div className="db-checks">
+                      {(['email', 'sms', 'inApp'] as const).map((k) => <label key={k} className="db-check"><input type="checkbox" checked={alertDelivery[k]} onChange={(e) => setAlertDelivery((p) => ({ ...p, [k]: e.target.checked }))} /><span>{{email:'Email',sms:'SMS',inApp:'In-App'}[k]}</span></label>)}
+                    </div></div>
+                  </div>
+                  <div className="db-builder-matches"><Sparkles size={13} /><span><strong>{liveBuilderMatches.length}</strong> matching Arizona parcels with current criteria</span></div>
+                  <div className="db-builder-footer">
+                    <button type="button" className="db-primary-btn" onClick={handleSaveAlert}><Check size={13} /> {editingAlertId ? 'Update Alert' : 'Save & Activate'}</button>
+                    <button type="button" className="db-secondary-btn" onClick={() => { setShowBuilder(false); setEditingAlertId(null) }}>Cancel</button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Notification Subscriptions */}
+          <div className="db-card">
+            <h4 className="db-card-title">Alert Subscriptions</h4>
+            <div className="db-toggle-list">
+              {[
+                { k: 'priceDrops', label: 'Price Drop Alerts', desc: 'When saved properties reduce in price' },
+                { k: 'newListings', label: 'New MLS Matches', desc: 'When new parcels match your profile' },
+                { k: 'tourReminders', label: 'Tour Reminders', desc: 'Reminders for scheduled showings' },
+                { k: 'marketReports', label: 'Market Reports', desc: 'Weekly Arizona land market updates' },
+              ].map(({ k, label, desc }) => (
+                <div key={k} className="db-toggle-row">
+                  <div className="db-toggle-text"><strong>{label}</strong><span>{desc}</span></div>
+                  <button type="button" className={`db-switch ${notificationsPrefs[k as keyof typeof notificationsPrefs] ? 'on' : ''}`}
+                    onClick={() => setNotificationsPrefs((p) => ({ ...p, [k]: !p[k as keyof typeof p] }))} aria-label={`Toggle ${label}`}>
+                    <span className="db-switch-thumb" />
+                  </button>
+                </div>
               ))}
             </div>
-          </div>
-
-          <div className="dashboard-card-box">
-            <h4>Target Acreage</h4>
-            <div className="dashboard-pill-options">
-              {ACREAGE_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  className={`option-chip ${targetAcreage === opt ? 'is-selected' : ''}`}
-                  onClick={() => setTargetAcreage(opt)}
-                >
-                  {opt}
-                </button>
-              ))}
+            <div className="db-save-strip">
+              <button type="button" className="db-secondary-btn" onClick={handleSaveNotifPrefs}>
+                {settingsSaved ? <><Check size={13} /> Saved!</> : 'Save Preferences'}
+              </button>
             </div>
           </div>
 
-          <div className="dashboard-card-box">
-            <h4>Target Budget</h4>
-            <div className="dashboard-pill-options">
-              {BUDGET_OPTIONS.map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  className={`option-chip ${budgetRange === opt ? 'is-selected' : ''}`}
-                  onClick={() => setBudgetRange(opt)}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="dashboard-card-box">
-            <h4>Preferred Arizona Counties</h4>
-            <div className="dashboard-pill-options">
-              {COUNTY_OPTIONS.map((county) => (
-                <button
-                  key={county}
-                  type="button"
-                  className={`option-chip ${preferredCounties.includes(county) ? 'is-selected' : ''}`}
-                  onClick={() => toggleArrayItem(preferredCounties, setPreferredCounties, county)}
-                >
-                  {preferredCounties.includes(county) && <Check size={12} />} {county}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="dashboard-card-box">
-            <h4>Property Types</h4>
-            <div className="dashboard-pill-options">
-              {PROPERTY_TYPES.map((ptype) => (
-                <button
-                  key={ptype}
-                  type="button"
-                  className={`option-chip ${preferredTypes.includes(ptype) ? 'is-selected' : ''}`}
-                  onClick={() => toggleArrayItem(preferredTypes, setPreferredTypes, ptype)}
-                >
-                  {preferredTypes.includes(ptype) && <Check size={12} />} {ptype}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="dashboard-card-box">
-            <h4>Must-Have Features</h4>
-            <div className="dashboard-features-checklist">
-              {MUST_HAVE_FEATURES.map((feat) => {
-                const checked = mustHaves.includes(feat)
+          {/* Alert Cards */}
+          {personalizedAlerts.length > 0 && (
+            <div className="db-alert-cards">
+              {personalizedAlerts.map((a) => {
+                const matches = getAlertMatches(a, properties)
                 return (
-                  <label key={feat} className="checklist-label">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleArrayItem(mustHaves, setMustHaves, feat)}
-                    />
-                    <span>{feat}</span>
-                  </label>
+                  <div key={a.id} className="db-alert-card">
+                    <div className="db-alert-card-top">
+                      <div className="db-alert-card-title"><strong>{a.title}</strong><span className={`db-status-badge ${a.active ? 'on' : 'off'}`}>{a.active ? 'Active' : 'Paused'}</span></div>
+                      <div className="db-alert-meta"><span>{a.counties.join(', ')}</span><span>·</span><span>{a.acreage}</span><span>·</span><span>{a.maxPrice > 0 ? `Under ${formatPrice(a.maxPrice)}` : 'Any Budget'}</span></div>
+                    </div>
+                    <div className="db-alert-card-actions">
+                      <button type="button" className="db-matches-pill" onClick={() => handleViewMatches(a)}><strong>{matches.length}</strong> matches <ChevronRight size={11} /></button>
+                      <button type="button" className="db-icon-btn" onClick={() => handleEditAlert(a)} title="Edit"><Pencil size={12} /></button>
+                      <button type="button" className="db-icon-btn" onClick={() => togglePersonalizedAlertActive(a.id)} title={a.active ? 'Pause' : 'Resume'}>{a.active ? <Bell size={12} /> : <BellRing size={12} />}</button>
+                      <button type="button" className="db-icon-btn danger" onClick={() => { deletePersonalizedAlert(a.id); onNotify?.('Alert deleted') }} title="Delete"><Trash2 size={12} /></button>
+                    </div>
+                  </div>
                 )
               })}
             </div>
-          </div>
+          )}
 
-          <div className="dashboard-save-strip">
-            <button
-              type="button"
-              className="dashboard-primary-btn"
-              onClick={handleSaveAll}
-              disabled={saveStatus === 'saving'}
-            >
-              {saveStatus === 'saving' ? (
-                'Saving Preferences…'
-              ) : saveStatus === 'saved' ? (
-                <>
-                  <Check size={16} strokeWidth={2.5} /> Saved!
-                </>
-              ) : (
-                'Save Preferences'
-              )}
-            </button>
-            <button
-              type="button"
-              className="dashboard-secondary-btn"
-              onClick={handleApplyPreferencesToSearch}
-            >
-              Sync with Search
-            </button>
-          </div>
+          {personalizedAlerts.length === 0 && !showBuilder && (
+            <div className="db-empty">
+              <Bell size={34} /><h3>No alerts yet</h3>
+              <p>Set up personalized criteria and get instant notifications when matching Arizona land is listed.</p>
+              <button type="button" className="db-primary-btn" onClick={handleOpenNewAlert}><Plus size={14} /> Create First Alert</button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* ========================================================
-          TAB 4: PROFILE INFO
-      ======================================================== */}
-      {activeTab === 'profile' && (
-        <div className="dashboard-tab-pane">
-          <div className="dashboard-pane-header">
-            <div>
-              <h3>Personal Profile</h3>
-              <p>Manage your account name, contact details, and buyer bio.</p>
+      {/* ══════════════════════════════════════════
+          SETTINGS
+      ══════════════════════════════════════════ */}
+      {activeTab === 'settings' && (
+        <div className="db-pane">
+          <div className="db-pane-hd">
+            <div><h3>Profile Settings</h3><p>Update your contact details, buyer profile, and preferences.</p></div>
+          </div>
+
+          {/* Personal Info */}
+          <div className="db-settings-block">
+            <div className="db-block-label"><UserIcon size={13} /> Personal Information</div>
+            <div className="db-form-grid">
+              <div className="db-field-grp">
+                <label htmlFor="s-name">Full Name *</label>
+                <input id="s-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Sarah Miller" className="db-input" />
+              </div>
+              <div className="db-field-grp">
+                <label htmlFor="s-username">Username</label>
+                <div className="db-prefix-wrap"><span className="db-prefix">@</span><input id="s-username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="sarah_miller" className="db-input db-input--prefixed" /></div>
+              </div>
+              <div className="db-field-grp">
+                <label htmlFor="s-email">Email *</label>
+                <input id="s-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" className="db-input" />
+              </div>
+              <div className="db-field-grp">
+                <label htmlFor="s-phone">Phone</label>
+                <input id="s-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(602) 555-0142" className="db-input" />
+              </div>
+              <div className="db-field-grp">
+                <label htmlFor="s-loc">Location</label>
+                <input id="s-loc" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Tucson, AZ" className="db-input" />
+              </div>
+              <div className="db-field-grp">
+                <label htmlFor="s-buyer">Buyer Goal</label>
+                <select id="s-buyer" value={buyerType} onChange={(e) => setBuyerType(e.target.value)} className="db-select">{BUYER_TYPES.map((bt) => <option key={bt} value={bt}>{bt}</option>)}</select>
+              </div>
+              <div className="db-field-grp full">
+                <label htmlFor="s-bio">About / Search Goals</label>
+                <textarea id="s-bio" rows={3} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about the land or homestead you're seeking..." className="db-input db-textarea" />
+              </div>
+            </div>
+            <div className="db-save-strip">
+              <button type="button" className="db-primary-btn" onClick={handleSaveProfile} disabled={saveStatus === 'saving'}>
+                {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? <><Check size={13} /> Profile Saved!</> : 'Save Profile'}
+              </button>
             </div>
           </div>
 
-          <div className="dashboard-form-card">
-            <div className="dashboard-form-grid">
-              <div className="dashboard-field-group">
-                <label htmlFor="dash-name">Full Name *</label>
-                <input
-                  id="dash-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Sarah Miller"
-                />
+          {/* General Settings */}
+          <div className="db-settings-block">
+            <div className="db-block-label"><Settings size={13} /> General Settings</div>
+            <div className="db-toggle-list">
+              <div className="db-toggle-row">
+                <div className="db-toggle-text">
+                  <strong>Appearance</strong>
+                  <span>Toggle between light and dark mode</span>
+                </div>
+                <button type="button" className={`db-theme-btn ${darkMode ? 'dark' : 'light'}`} onClick={() => { toggleDarkMode(); onNotify?.(darkMode ? 'Light mode' : 'Dark mode') }} aria-label="Toggle theme">
+                  <Sun size={13} className="theme-sun" />
+                  <span className="db-theme-label">{darkMode ? 'Dark' : 'Light'}</span>
+                  <Moon size={13} className="theme-moon" />
+                </button>
               </div>
-
-              <div className="dashboard-field-group">
-                <label htmlFor="dash-username">Username</label>
-                <input
-                  id="dash-username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. sarah_miller"
-                />
-              </div>
-
-              <div className="dashboard-field-group">
-                <label htmlFor="dash-email">Email Address *</label>
-                <input
-                  id="dash-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                />
-              </div>
-
-              <div className="dashboard-field-group">
-                <label htmlFor="dash-phone">Phone Number</label>
-                <input
-                  id="dash-phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(602) 555-0142"
-                />
-              </div>
-
-              <div className="dashboard-field-group">
-                <label htmlFor="dash-location">Location / Residence</label>
-                <input
-                  id="dash-location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Tucson, AZ"
-                />
-              </div>
-
-              <div className="dashboard-field-group full-width">
-                <label htmlFor="dash-bio">Buyer Bio / Search Goals</label>
-                <textarea
-                  id="dash-bio"
-                  rows={3}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Looking for 10-40 acres in Cochise or Santa Cruz County with mountain views..."
-                />
-              </div>
-            </div>
-
-            <div className="dashboard-save-strip">
-              <button
-                type="button"
-                className="dashboard-primary-btn"
-                onClick={handleSaveAll}
-                disabled={saveStatus === 'saving'}
-              >
-                {saveStatus === 'saving' ? (
-                  'Saving Changes…'
-                ) : saveStatus === 'saved' ? (
-                  <>
-                    <Check size={16} strokeWidth={2.5} /> Saved!
-                  </>
-                ) : (
-                  'Save Profile Details'
-                )}
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ========================================================
-          TAB 5: ALERTS & NOTIFICATIONS
-      ======================================================== */}
-      {activeTab === 'notifications' && (
-        <div className="dashboard-tab-pane">
-          <div className="dashboard-pane-header">
-            <div>
-              <h3>Alerts &amp; Notifications</h3>
-              <p>Configure which real-time Arizona real estate updates you receive.</p>
-            </div>
-          </div>
-
-          <div className="dashboard-card-box">
-            <h4>Notification Channels</h4>
-            <div className="dashboard-toggle-list">
-              <label className="toggle-row">
-                <div className="toggle-text">
-                  <strong>Price Drop Alerts</strong>
-                  <span>Instant notification when saved properties reduce in price</span>
-                </div>
-                <input
-                  type="checkbox"
-                  className="toggle-checkbox"
-                  checked={notificationsPrefs.priceDrops}
-                  onChange={(e) =>
-                    setNotificationsPrefs((prev) => ({ ...prev, priceDrops: e.target.checked }))
-                  }
-                />
-              </label>
-
-              <label className="toggle-row">
-                <div className="toggle-text">
-                  <strong>New Listing Matches</strong>
-                  <span>Alerts when new land parcels match your acreage &amp; budget criteria</span>
-                </div>
-                <input
-                  type="checkbox"
-                  className="toggle-checkbox"
-                  checked={notificationsPrefs.newListings}
-                  onChange={(e) =>
-                    setNotificationsPrefs((prev) => ({ ...prev, newListings: e.target.checked }))
-                  }
-                />
-              </label>
-
-              <label className="toggle-row">
-                <div className="toggle-text">
-                  <strong>Tour &amp; Showing Reminders</strong>
-                  <span>Reminders for scheduled broker parcel walk-throughs</span>
-                </div>
-                <input
-                  type="checkbox"
-                  className="toggle-checkbox"
-                  checked={notificationsPrefs.tourReminders}
-                  onChange={(e) =>
-                    setNotificationsPrefs((prev) => ({ ...prev, tourReminders: e.target.checked }))
-                  }
-                />
-              </label>
-
-              <label className="toggle-row">
-                <div className="toggle-text">
-                  <strong>Southern Arizona Market Reports</strong>
-                  <span>Quarterly land values, water availability, and zoning updates</span>
-                </div>
-                <input
-                  type="checkbox"
-                  className="toggle-checkbox"
-                  checked={notificationsPrefs.marketReports}
-                  onChange={(e) =>
-                    setNotificationsPrefs((prev) => ({ ...prev, marketReports: e.target.checked }))
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="dashboard-save-strip" style={{ marginTop: '16px' }}>
-              <button
-                type="button"
-                className="dashboard-primary-btn"
-                onClick={handleSaveAll}
-              >
-                Save Notification Preferences
-              </button>
-            </div>
-          </div>
-
-          {/* Recent Notifications feed */}
-          <div className="dashboard-card-box">
-            <div className="dashboard-card-head">
-              <h4>Recent Notifications Feed</h4>
-              <button
-                type="button"
-                className="dashboard-card-link-btn"
-                onClick={() => {
-                  markAllNotificationsRead()
-                  onNotify?.('All notifications marked as read')
-                }}
-              >
-                Mark all read
-              </button>
-            </div>
-
-            <div className="dashboard-notifications-feed">
-              {notificationsList.map((item) => (
-                <div
-                  key={item.id}
-                  className={`dashboard-feed-item ${!item.read ? 'is-unread' : ''}`}
-                  onClick={() => {
-                    if (item.propertyId) navigate(`/property/${item.propertyId}`)
-                  }}
-                >
-                  <div className="feed-item-bullet" />
-                  <div className="feed-item-content">
-                    <div className="feed-item-top">
-                      <strong>{item.title}</strong>
-                      <span className="feed-item-date">{item.date}</span>
-                    </div>
-                    <p>{item.message}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================
-          TAB 6: SECURITY & ACCOUNT
-      ======================================================== */}
+      {/* ══════════════════════════════════════════
+          SECURITY
+      ══════════════════════════════════════════ */}
       {activeTab === 'security' && (
-        <div className="dashboard-tab-pane">
-          <div className="dashboard-pane-header">
-            <div>
-              <h3>Account &amp; Security</h3>
-              <p>Manage authentication credentials, data export, and session access.</p>
+        <div className="db-pane">
+          <div className="db-pane-hd">
+            <div><h3>Security</h3><p>Manage your password and account data.</p></div>
+          </div>
+
+          {/* Password Change */}
+          <div className="db-settings-block">
+            <div className="db-block-label"><KeyRound size={13} /> Change Password</div>
+            <div className="db-pwd-form">
+              {/* Current */}
+              <div className="db-field-grp">
+                <label htmlFor="p-current">Current Password</label>
+                <div className="db-pwd-wrap">
+                  <Lock size={13} className="db-pwd-icon" />
+                  <input id="p-current" type={showCurrentPwd ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" className="db-input db-pwd-input" />
+                  <button type="button" className="db-eye-btn" onClick={() => setShowCurrentPwd((v) => !v)}>{showCurrentPwd ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+                </div>
+              </div>
+              {/* New */}
+              <div className="db-field-grp">
+                <label htmlFor="p-new">New Password</label>
+                <div className="db-pwd-wrap">
+                  <Lock size={13} className="db-pwd-icon" />
+                  <input id="p-new" type={showNewPwd ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="At least 8 characters" className="db-input db-pwd-input" />
+                  <button type="button" className="db-eye-btn" onClick={() => setShowNewPwd((v) => !v)}>{showNewPwd ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+                </div>
+                {newPassword && (
+                  <div className="db-strength">
+                    <div className="db-strength-bars">{[1,2,3,4].map((i) => <div key={i} className={`db-strength-bar ${i <= pwdStrength.level ? 'filled' : ''}`} style={i <= pwdStrength.level ? { background: pwdStrength.color } : {}} />)}</div>
+                    <span className="db-strength-label" style={{ color: pwdStrength.color }}>{pwdStrength.label}</span>
+                  </div>
+                )}
+              </div>
+              {/* Confirm */}
+              <div className="db-field-grp">
+                <label htmlFor="p-confirm">Confirm Password</label>
+                <div className="db-pwd-wrap">
+                  <Lock size={13} className="db-pwd-icon" />
+                  <input id="p-confirm" type={showConfirmPwd ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" className="db-input db-pwd-input" />
+                  <button type="button" className="db-eye-btn" onClick={() => setShowConfirmPwd((v) => !v)}>{showConfirmPwd ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+                </div>
+                {confirmPassword && newPassword && (
+                  <div className={`db-pwd-match ${confirmPassword === newPassword ? 'ok' : 'err'}`}>
+                    {confirmPassword === newPassword ? <><Check size={11} /> Passwords match</> : <><X size={11} /> Don't match</>}
+                  </div>
+                )}
+              </div>
+              {pwdError && <div className="db-banner error small"><AlertCircle size={13} />{pwdError}</div>}
+              <div className="db-save-strip">
+                <button type="button" className="db-primary-btn" onClick={handleChangePassword} disabled={pwdStatus === 'saving'}>
+                  {pwdStatus === 'saving' ? 'Updating…' : pwdStatus === 'saved' ? <><Check size={13} /> Password Updated!</> : <><KeyRound size={13} /> Update Password</>}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Password update form */}
-          <div className="dashboard-card-box">
-            <h4>Change Password</h4>
-            {passwordStatus && (
-              <div
-                className={`dashboard-alert ${passwordStatus.isError ? 'is-error' : 'is-success'}`}
-              >
-                {passwordStatus.isError ? <AlertCircle size={15} /> : <CheckCircle2 size={15} />}
-                <span>{passwordStatus.message}</span>
+          {/* Account Operations */}
+          <div className="db-settings-block">
+            <div className="db-block-label"><ShieldCheck size={13} /> Account</div>
+            <div className="db-account-ops">
+              <div className="db-op-row">
+                <div><strong>Export Data</strong><p>Download your profile, alerts & saved IDs as JSON.</p></div>
+                <button type="button" className="db-secondary-btn" onClick={handleExport}><Download size={13} /> Export</button>
               </div>
-            )}
-            <form onSubmit={handleUpdatePassword} className="dashboard-password-form">
-              <div className="dashboard-field-group">
-                <label htmlFor="sec-current">Current Password</label>
-                <input
-                  id="sec-current"
-                  type="password"
-                  placeholder="Enter current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                />
+              <div className="db-op-row danger-row">
+                <div><strong>Sign Out</strong><p>Sign out from this device.</p></div>
+                <button type="button" className="db-signout-btn" onClick={() => { setCurrentUser(null); onNotify?.('Signed out') }}><LogOut size={13} /> Sign Out</button>
               </div>
-
-              <div className="dashboard-field-group">
-                <label htmlFor="sec-new">New Password</label>
-                <input
-                  id="sec-new"
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-
-              <div className="dashboard-field-group">
-                <label htmlFor="sec-confirm">Confirm New Password</label>
-                <input
-                  id="sec-confirm"
-                  type="password"
-                  placeholder="Repeat new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
-
-              <button type="submit" className="dashboard-primary-btn" style={{ width: 'fit-content' }}>
-                Update Password
-              </button>
-            </form>
-          </div>
-
-          {/* Active Session info */}
-          <div className="dashboard-card-box">
-            <h4>Active Device &amp; Sessions</h4>
-            <div className="session-card">
-              <div className="session-icon">
-                <ShieldCheck size={20} />
-              </div>
-              <div className="session-info">
-                <strong>Current Active Device (Browser)</strong>
-                <span>Arizona, United States · SSL Encrypted · Active Now</span>
-              </div>
-              <span className="session-badge">Current</span>
-            </div>
-          </div>
-
-          {/* Export & Sign Out */}
-          <div className="dashboard-card-box">
-            <h4>Account Operations</h4>
-            <div className="dashboard-danger-actions">
-              <button
-                type="button"
-                className="dashboard-secondary-btn"
-                onClick={handleExportProfile}
-              >
-                <Download size={14} /> Export Profile &amp; Saved Data (JSON)
-              </button>
-
-              <button
-                type="button"
-                className="dashboard-signout-btn"
-                onClick={handleSignOut}
-              >
-                <LogOut size={14} /> Sign out of Arizona Life
-              </button>
             </div>
           </div>
         </div>

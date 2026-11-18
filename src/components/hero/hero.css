@@ -177,7 +177,7 @@
 
 .hero-top-actions {
   position: absolute;
-  top: 8px;
+  top: 18px;
   right: 10px;
   display: flex;
   gap: 6px;
@@ -185,8 +185,8 @@
 }
 
 .hero-frosted-chip-btn {
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -461,26 +461,6 @@
 .stat-segment-btn strong {
   font-weight: 700;
   color: #111827;
-}
-
-.stat-tour-pulse-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #f59e0b;
-  display: inline-block;
-  margin-left: 1px;
-  animation: tourDotPulse 1.6s infinite ease-in-out;
-}
-
-.stat-segment-btn--tour-today {
-  color: #b45309 !important;
-}
-
-@keyframes tourDotPulse {
-  0% { transform: scale(0.85); opacity: 0.7; }
-  50% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(0.85); opacity: 0.7; }
 }
 
 /* ==========================================================================

@@ -6,7 +6,7 @@ import L from 'leaflet'
 import {
   ArrowDownUp, ArrowLeft, ArrowRight, BadgeCheck, Bell, Building2, Calendar, Camera, Check, ChevronDown, ChevronLeft,
   ChevronRight, Clock3, Compass, DollarSign, Heart, House, LandPlot, Layers,
-  Mail, MapPin, Maximize2, MessageCircle, Moon, Mountain, Pause, Phone, Play, RotateCcw, RotateCw, Satellite, Search, Send, Share2, ShieldCheck,
+  Mail, MapPin, Maximize2, MessageCircle, Mountain, Pause, Phone, Play, RotateCcw, RotateCw, Satellite, Search, Send, Share2, ShieldCheck,
   SlidersHorizontal, Sun, Trees, User as UserIcon, Users, Volume2, VolumeX, X,
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
@@ -23,7 +23,6 @@ import ucLogo from './assets/uc-logo.png'
 import { getFilteredProperties, initialFilters, propertyMatchesType, useAppStore } from './store/useAppStore'
 import type { AppNotification, Filters } from './store/useAppStore'
 import { HeroCarousel, ContentSheet } from './components/hero'
-import { isDateToday, formatTourStartTime } from './components/tours/tourUtils'
 import { LAST_VIEWED_STORAGE_KEY } from './data/userActivity'
 import './App.css'
 const counties = ['Cochise', 'Pima', 'Graham', 'Santa Cruz']
@@ -129,35 +128,14 @@ function App() {
     window.setTimeout(() => setToast(''), 2600)
   }, [])
 
-  const scheduledTours = useAppStore((state) => state.scheduledTours || [])
-  const addNotification = useAppStore((state) => state.addNotification)
-
-  const todayTour = scheduledTours.find((t) => isDateToday(t.date))
-
-  // Notify user in notification center if there is any tour on the current day
+  // Ensure any residual tour reminder notifications are cleared
   useEffect(() => {
-    if (todayTour) {
-      const hasTodayNotif = notifications.some((n) => n.id.startsWith('tour-today-'))
-      if (!hasTodayNotif) {
-        addNotification({
-          id: `tour-today-${todayTour.id}`,
-          title: `Tour Today: ${todayTour.propertyTitle}`,
-          message: `Your ${todayTour.type.toLowerCase()} is scheduled today at ${formatTourStartTime(todayTour.time)} with Broker Rick Frank.`,
-          date: 'Today',
-          read: false,
-          propertyId: todayTour.propertyId,
-        })
-      }
+    if (notifications.some((n) => n.id.startsWith('tour-today-'))) {
+      useAppStore.setState((state) => ({
+        notifications: state.notifications.filter((n) => !n.id.startsWith('tour-today-')),
+      }))
     }
-  }, [todayTour, notifications, addNotification])
-
-  // In-app toast alert notification when opening app if there is a tour today
-  useEffect(() => {
-    if (todayTour && !sessionStorage.getItem('az-tour-today-alerted')) {
-      sessionStorage.setItem('az-tour-today-alerted', 'true')
-      notify(`🗓️ Reminder: You have a tour scheduled today at ${formatTourStartTime(todayTour.time)}!`)
-    }
-  }, [todayTour, notify])
+  }, [notifications])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
@@ -223,23 +201,8 @@ function App() {
             >
               {islandExpanded && (
                 <div className="island-content">
-                  {todayTour ? (
-                    <div
-                      style={{ cursor: 'pointer', textAlign: 'center' }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate('/contact')
-                      }}
-                    >
-                      <span className="island-pill-title">🗓️ Tour Today · {formatTourStartTime(todayTour.time)}</span>
-                      <span className="island-pill-sub">{todayTour.propertyTitle}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="island-pill-title">🌵 Arizona Life</span>
-                      <span className="island-pill-sub">Pearce, AZ</span>
-                    </>
-                  )}
+                  <span className="island-pill-title">🌵 Arizona Life</span>
+                  <span className="island-pill-sub">Pearce, AZ</span>
                 </div>
               )}
               <div className="island-compact">
@@ -280,26 +243,6 @@ function App() {
               onClick={() => navigate('/contact')}
             >
               <Phone size={19} />
-            </button>
-            <button
-              className="theme-trigger"
-              type="button"
-              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              onClick={handleToggleTheme}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={darkMode ? 'dark' : 'light'}
-                  className="theme-icon-wrap"
-                  initial={{ rotate: -70, scale: 0.6, opacity: 0 }}
-                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                  exit={{ rotate: 70, scale: 0.6, opacity: 0 }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
-                >
-                  {darkMode ? <Sun size={19} /> : <Moon size={19} />}
-                </motion.span>
-              </AnimatePresence>
             </button>
             <button className="notification-trigger" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`} onClick={() => setNotificationsOpen(true)}>
               <Bell size={19} />
@@ -360,6 +303,7 @@ function App() {
                         buyerType: 'Land Buyer & Homesteader',
                         bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.',
                         memberSince: 'Nov 2024',
+                        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300&q=80',
                         preferences: {
                           buyerType: 'Land Buyer & Homesteader',
                           targetAcreage: '5 - 20 acres',

@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion'
 import {
   BadgeDollarSign,
+  Bell,
   Heart,
   LayoutDashboard,
   LogOut,
   Moon,
   Phone,
-  Sliders,
   Sparkles,
   Sun,
   User as UserIcon,
@@ -139,28 +139,14 @@ export default function UserMenuDropdown({
                 type="button"
                 className="user-menu-item"
                 role="menuitem"
-                onClick={() => onNavigate('/sell')}
+                onClick={() => onNavigate('/dashboard?tab=alerts')}
               >
                 <span className="user-menu-item-icon">
-                  <BadgeDollarSign size={16} />
+                  <Bell size={16} />
                 </span>
                 <span className="user-menu-item-text">
-                  <span>List Property & Join Team</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className="user-menu-item"
-                role="menuitem"
-                onClick={() => onNavigate('/dashboard?tab=preferences')}
-              >
-                <span className="user-menu-item-icon">
-                  <Sliders size={16} />
-                </span>
-                <span className="user-menu-item-text">
-                  <strong>Preferences</strong>
-                  <small>Acreage, budget & counties</small>
+                  <strong>Personalized Alerts</strong>
+                  <small>Instant acreage & price alerts</small>
                 </span>
               </button>
 
@@ -238,10 +224,12 @@ export default function UserMenuDropdown({
           /* Guest State Dropdown */
           <>
             <div className="user-menu-guest-header">
-              <div className="user-menu-avatar-fallback guest">
-                <UserIcon size={18} />
+              <div className="user-menu-avatar-wrap">
+                <div className="user-menu-avatar-fallback guest">
+                  <UserIcon size={18} />
+                </div>
               </div>
-              <div>
+              <div className="user-menu-user-info">
                 <strong className="user-menu-name">Welcome, Guest</strong>
                 <span className="user-menu-email">Sign in to save properties</span>
               </div>

@@ -88,27 +88,7 @@ export function formatTourDate(dateString: string): string {
   }
 }
 
-export const defaultScheduledTours: ScheduledTour[] = [
-  {
-    id: 'tour-sample-today-1',
-    propertyId: 'pearce-homestead',
-    propertyTitle: 'Desert Homestead with Mountain Views',
-    propertyCity: 'Pearce',
-    propertyCounty: 'Cochise',
-    propertyPrice: 95000,
-    propertyAcres: 20.1,
-    propertyImage: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=85',
-    date: getTodayDateString(),
-    time: '10:00 AM',
-    type: 'In-person Guided Tour',
-    agentName: 'Rick Frank, Designated Broker',
-    agentPhone: '(520) 403-3903',
-    agentEmail: 'rick@arizonalifehomes.com',
-    notes: 'Guided tour of 20.1-acre homestead parcel. Review boundary pins, high-volume water well test, and Dragoon Mountain panoramic building site.',
-    status: 'confirmed',
-    createdAt: new Date().toISOString(),
-  },
-]
+export const defaultScheduledTours: ScheduledTour[] = []
 
 export function getGoogleCalendarUrl(tour: ScheduledTour): string {
   const [y, m, d] = tour.date.split('-').map(Number)

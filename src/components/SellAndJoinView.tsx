@@ -43,51 +43,6 @@ interface SellAndJoinViewProps {
 
 type ActiveTab = 'list_property' | 'submissions' | 'join_team'
 
-// Curated high-res sample photos of Arizona properties for quick preview
-const SAMPLE_AZ_PHOTOS = [
-  {
-    name: 'Desert Vista & Mountains',
-    url: 'https://images.unsplash.com/photo-1602138759009-ca3386c95619?auto=format&fit=crop&w=1000&q=85',
-  },
-  {
-    name: 'Dragoon Foothills Acreage',
-    url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=85',
-  },
-  {
-    name: 'Southwest Ranch Estate',
-    url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1000&q=85',
-  },
-  {
-    name: 'Saguaro High Desert Land',
-    url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1000&q=85',
-  },
-  {
-    name: 'Country Homestead & Fencing',
-    url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=85',
-  },
-  {
-    name: 'Mountain Sunset Basin',
-    url: 'https://images.unsplash.com/photo-1705869340514-c3512ede4311?auto=format&fit=crop&w=1000&q=85',
-  },
-]
-
-const PROPERTY_FEATURE_OPTIONS = [
-  'Mountain views',
-  'Private well potential',
-  'Electricity at lot line',
-  'Off-grid / solar ready',
-  'Horses allowed',
-  'Perimeter fenced',
-  'Near National Forest / BLM',
-  'Gated community',
-  'Paved road access',
-  'Owner financing available',
-  'Septic installed / perc approved',
-  'High-speed internet ready',
-  'Holding tank installed',
-  'Agricultural zoning',
-]
-
 const ARIZONA_COUNTIES = ['Cochise', 'Pima', 'Graham', 'Santa Cruz', 'Pinal', 'Maricopa']
 
 export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoinViewProps) {
@@ -116,7 +71,7 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
   const [bathrooms, setBathrooms] = useState('2')
   const [sqft, setSqft] = useState('1800')
   const [description, setDescription] = useState('')
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([
+  const [selectedFeatures] = useState<string[]>([
     'Mountain views',
     'Horses allowed',
   ])
@@ -164,16 +119,6 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
     }
   }
 
-  // Add sample photo
-  const handleAddSamplePhoto = (sampleUrl: string) => {
-    if (images.includes(sampleUrl)) {
-      onNotify('Photo already added')
-      return
-    }
-    setImages((prev) => [...prev, sampleUrl])
-    onNotify('Sample Arizona photo added')
-  }
-
   // Remove photo
   const handleRemovePhoto = (indexToRemove: number) => {
     setImages((prev) => prev.filter((_, idx) => idx !== indexToRemove))
@@ -187,13 +132,6 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
       return [item, ...copy]
     })
     onNotify('Updated cover photo')
-  }
-
-  // Toggle features
-  const handleToggleFeature = (feature: string) => {
-    setSelectedFeatures((prev) =>
-      prev.includes(feature) ? prev.filter((f) => f !== feature) : [...prev, feature]
-    )
   }
 
   // Toggle agent specialties
@@ -423,7 +361,7 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
             onClick={() => setActiveTab('join_team')}
           >
             <Users size={15} />
-            <span>Become an Agent</span>
+            <span>Join Us</span>
           </button>
         </div>
       </div>
@@ -681,27 +619,7 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
                     </button>
                   </div>
 
-                  {/* Sample Photos Quick-Picker */}
-                  <div className="sample-photos-box">
-                    <div className="sample-photos-head">
-                      <span>Or pick from Arizona property presets:</span>
-                    </div>
-                    <div className="sample-photos-scroll">
-                      {SAMPLE_AZ_PHOTOS.map((sample) => (
-                        <button
-                          key={sample.name}
-                          type="button"
-                          className="sample-photo-pill"
-                          onClick={() => handleAddSamplePhoto(sample.url)}
-                          title={`Add ${sample.name}`}
-                        >
-                          <img src={sample.url} alt={sample.name} />
-                          <span>+ {sample.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
+                 
                   {/* Gallery Grid of Uploaded Images */}
                   {images.length > 0 && (
                     <div className="uploaded-gallery-section">
@@ -754,33 +672,7 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
                   )}
                 </div>
 
-                {/* 3. Features & Amenities */}
-                <div className="form-card-section">
-                  <div className="form-section-title">
-                    <LandPlot size={18} />
-                    <h3>3. Features & Amenities</h3>
-                  </div>
-                  <p className="section-instruction">
-                    Select all attributes that apply to your parcel or home.
-                  </p>
-
-                  <div className="feature-chips-wrap">
-                    {PROPERTY_FEATURE_OPTIONS.map((feat) => {
-                      const isSelected = selectedFeatures.includes(feat)
-                      return (
-                        <button
-                          key={feat}
-                          type="button"
-                          className={`feature-chip ${isSelected ? 'is-selected' : ''}`}
-                          onClick={() => handleToggleFeature(feat)}
-                        >
-                          {isSelected && <Check size={12} />}
-                          <span>{feat}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+        
 
                 {/* 4. Description */}
                 <div className="form-card-section">

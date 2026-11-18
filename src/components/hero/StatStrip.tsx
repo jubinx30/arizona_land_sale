@@ -2,7 +2,6 @@ import { Calendar, Heart, TrendingDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { MOCK_PERSONAL_STATS } from '../../data/userActivity'
 import { useAppStore } from '../../store/useAppStore'
-import { isDateToday } from '../tours/tourUtils'
 
 interface StatStripProps {
   onNotify?: (message: string) => void
@@ -19,7 +18,6 @@ export default function StatStrip({ onNotify }: StatStripProps) {
   const scheduledTours = useAppStore((state) => state.scheduledTours || [])
 
   const toursCount = scheduledTours.length
-  const hasTourToday = scheduledTours.some((t) => isDateToday(t.date))
 
   const handleSavedClick = () => {
     navigate('/saved')
@@ -76,15 +74,14 @@ export default function StatStrip({ onNotify }: StatStripProps) {
       {/* Segment 3: Tours */}
       <button
         type="button"
-        className={`stat-segment-btn ${hasTourToday ? 'stat-segment-btn--tour-today' : ''}`}
+        className="stat-segment-btn"
         onClick={handleToursClick}
         aria-label={tourAriaLabel}
       >
         <Calendar size={14} className="stat-icon stat-icon--tour" strokeWidth={2.2} />
         <span>
-          <strong>{toursCount}</strong> {hasTourToday ? 'tour today' : toursCount === 1 ? 'tour' : 'tours'}
+          <strong>{toursCount}</strong> {toursCount === 1 ? 'tour' : 'tours'}
         </span>
-        {hasTourToday && <span className="stat-tour-pulse-dot" aria-hidden="true" />}
       </button>
     </div>
   )

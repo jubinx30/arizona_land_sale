@@ -3,6 +3,24 @@ import { persist } from 'zustand/middleware'
 import type { Property } from '../data/properties'
 import { defaultScheduledTours, type ScheduledTour } from '../components/tours/tourUtils'
 
+export type PersonalizedAlert = {
+  id: string
+  title: string
+  counties: string[]
+  maxPrice: number
+  acreage: string
+  propertyTypes: string[]
+  mustHaves: string[]
+  frequency: 'instant' | 'daily' | 'weekly'
+  delivery: {
+    email: boolean
+    sms: boolean
+    inApp: boolean
+  }
+  active: boolean
+  createdAt: string
+}
+
 export type UserPreferences = {
   buyerType?: string
   targetAcreage?: string
@@ -10,6 +28,7 @@ export type UserPreferences = {
   preferredCounties?: string[]
   preferredTypes?: string[]
   mustHaves?: string[]
+  personalizedAlerts?: PersonalizedAlert[]
   notifications?: {
     priceDrops: boolean
     newListings: boolean
@@ -146,6 +165,43 @@ export const defaultTeamApplications: TeamApplication[] = [
   },
 ]
 
+export const defaultPersonalizedAlerts: PersonalizedAlert[] = [
+  {
+    id: 'alert-cochise-homestead',
+    title: 'Cochise High Desert Homesteads',
+    counties: ['Cochise'],
+    maxPrice: 250000,
+    acreage: '5 - 20 acres',
+    propertyTypes: ['Desert Land', 'Country Homes'],
+    mustHaves: ['Mountain views', 'Off-grid solar ready'],
+    frequency: 'instant',
+    delivery: {
+      email: true,
+      sms: true,
+      inApp: true,
+    },
+    active: true,
+    createdAt: 'Active',
+  },
+  {
+    id: 'alert-pima-ranch',
+    title: 'Pima & Santa Cruz Horse Acreage',
+    counties: ['Pima', 'Santa Cruz'],
+    maxPrice: 350000,
+    acreage: '20 - 50 acres',
+    propertyTypes: ['Equine / Horse Property', 'Desert Land'],
+    mustHaves: ['Horses allowed', 'Private well / water rights'],
+    frequency: 'daily',
+    delivery: {
+      email: true,
+      sms: false,
+      inApp: true,
+    },
+    active: true,
+    createdAt: 'Active',
+  },
+]
+
 const initialNotifications: AppNotification[] = [
   {
     id: 'benson-new-listing',
@@ -182,6 +238,11 @@ type AppState = {
   notifications: AppNotification[]
   userPropertyListings: UserPropertyListing[]
   teamApplications: TeamApplication[]
+  personalizedAlerts: PersonalizedAlert[]
+  addPersonalizedAlert: (alert: PersonalizedAlert) => void
+  updatePersonalizedAlert: (id: string, updates: Partial<PersonalizedAlert>) => void
+  deletePersonalizedAlert: (id: string) => void
+  togglePersonalizedAlertActive: (id: string) => void
   scheduledTours: ScheduledTour[]
   addScheduledTour: (tour: ScheduledTour) => void
   cancelScheduledTour: (id: string) => void
@@ -232,6 +293,27 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   notifications: initialNotifications,
   userPropertyListings: defaultUserPropertyListings,
   teamApplications: defaultTeamApplications,
+  personalizedAlerts: defaultPersonalizedAlerts,
+  addPersonalizedAlert: (alert) =>
+    set((state) => ({
+      personalizedAlerts: [alert, ...state.personalizedAlerts],
+    })),
+  updatePersonalizedAlert: (id, updates) =>
+    set((state) => ({
+      personalizedAlerts: state.personalizedAlerts.map((a) =>
+        a.id === id ? { ...a, ...updates } : a
+      ),
+    })),
+  deletePersonalizedAlert: (id) =>
+    set((state) => ({
+      personalizedAlerts: state.personalizedAlerts.filter((a) => a.id !== id),
+    })),
+  togglePersonalizedAlertActive: (id) =>
+    set((state) => ({
+      personalizedAlerts: state.personalizedAlerts.map((a) =>
+        a.id === id ? { ...a, active: !a.active } : a
+      ),
+    })),
   scheduledTours: defaultScheduledTours,
   addScheduledTour: (tour) => set((state) => ({
     scheduledTours: [tour, ...(state.scheduledTours || [])],
@@ -312,10 +394,15 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   name: 'arizona-life-app',
   merge: (persistedState, currentState) => {
     const p = (persistedState as Partial<AppState>) || {}
+    const filteredNotifications = (p.notifications || currentState.notifications).filter(
+      (n) => !n.id.startsWith('tour-today-')
+    )
     return {
       ...currentState,
       ...p,
-      scheduledTours: p.scheduledTours && p.scheduledTours.length > 0 ? p.scheduledTours : defaultScheduledTours,
+      notifications: filteredNotifications,
+      scheduledTours: p.scheduledTours || [],
+      personalizedAlerts: p.personalizedAlerts && p.personalizedAlerts.length > 0 ? p.personalizedAlerts : defaultPersonalizedAlerts,
     }
   },
 }))
