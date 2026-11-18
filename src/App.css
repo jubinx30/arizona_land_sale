@@ -258,6 +258,10 @@
 .brand-copy strong { font-size: 11px; font-weight: 800; }
 .brand-copy span { font-size: 8px; letter-spacing: 1.55px; margin-top: 3px; }
 .appbar-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.contact-trigger { width: 38px; height: 38px; position: relative; display: grid; place-items: center; border: 0; border-radius: 50%; color: var(--navy); background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.16s, transform 0.15s, color 0.18s; }
+.contact-trigger:hover { background: #f0f5f2; color: var(--green); }
+.contact-trigger:active { background: #e6efe9; transform: scale(0.94); }
+.contact-trigger.is-active { color: var(--green); background: #eaf3ed; }
 .theme-trigger { width: 38px; height: 38px; position: relative; display: grid; place-items: center; border: 0; border-radius: 50%; color: var(--navy); background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.16s, transform 0.15s, color 0.18s; }
 .theme-trigger:hover { background: #f0f5f2; color: var(--green); }
 .theme-trigger:active { background: #e6efe9; transform: scale(0.94); }
@@ -1817,6 +1821,51 @@
 .browse-note { text-align: center; padding: 14px; color: #8a969b; font-size: 9px; }
 .browse-note a { color: var(--green); font-weight: 700; text-decoration: none; }
 .contact-screen { background: #f7f8f6; }
+.contact-nav {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: white;
+  border-bottom: 1px solid #edf1f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.contact-back-btn {
+  border: 0;
+  background: transparent;
+  color: #586770;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 0 10px 0 4px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.16s, background-color 0.16s, transform 0.14s;
+}
+.contact-back-btn:hover {
+  color: var(--green);
+  background-color: #f0f5f2;
+}
+.contact-back-btn:active {
+  transform: scale(0.96);
+  background-color: #e6efe9;
+}
+.contact-nav-title {
+  color: #99a2a4;
+  font: 700 8px 'Montserrat', sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.contact-nav-spacer {
+  width: 58px;
+}
 .contact-hero { position: relative; padding: 31px 25px 35px; background: var(--navy); color: white; overflow: hidden; }
 .contact-hero::before, .contact-hero::after { content: ''; position: absolute; width: 200px; height: 200px; border: 1px solid #ffffff15; border-radius: 50%; right: -90px; bottom: -124px; box-shadow: 0 0 0 19px #ffffff08,0 0 0 42px #ffffff05; }
 .contact-hero::after { width: 105px; height: 105px; right: 30px; bottom: -54px; box-shadow: 0 0 0 14px #ffffff05; }
@@ -1938,6 +1987,10 @@
 .dark-mode .phone-frame, .dark-mode .screen-main, .dark-mode .appbar, .dark-mode .page-screen, .dark-mode .property-card, .dark-mode .bottom-sheet, .dark-mode .filter-sheet { background: #1d282f; }
 .dark-mode .uc-mark, .dark-mode .office-logo { filter: brightness(0) invert(1); }
 .dark-mode .appbar { border-color: #34434a; }
+.dark-mode .contact-trigger { color: #dce6eb; }
+.dark-mode .contact-trigger:hover { background: #26353c; color: #9ed5b5; }
+.dark-mode .contact-trigger:active { background: #32444c; transform: scale(0.94); }
+.dark-mode .contact-trigger.is-active { color: #86efac; background: #233735; }
 .dark-mode .theme-trigger { color: #f5c451; }
 .dark-mode .theme-trigger:hover { background: #26353c; color: #fde047; }
 .dark-mode .theme-trigger:active { background: #32444c; transform: scale(0.94); }
@@ -2021,6 +2074,23 @@
 .dark-mode .promise-card button:hover,
 .dark-mode .promise-card button:active { color: #bbf7d0; }
 .dark-mode .contact-screen { background: #172127; }
+.dark-mode .contact-nav {
+  background: #1d282f;
+  border-bottom: 1px solid #2a3a44;
+}
+.dark-mode .contact-back-btn {
+  color: #dce6eb;
+}
+.dark-mode .contact-back-btn:hover {
+  color: #4ade80;
+  background-color: #26353c;
+}
+.dark-mode .contact-back-btn:active {
+  background-color: #31444e;
+}
+.dark-mode .contact-nav-title {
+  color: #8da1ab;
+}
 .dark-mode .contact-hero {
   background: linear-gradient(170deg, #15222b 0%, #101a22 65%, #0d151c 100%);
   color: #edf2f7;

@@ -6,7 +6,6 @@ import {
   Heart,
   House,
   Map as MapIcon,
-  Phone,
   Search,
 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
@@ -23,7 +22,6 @@ const TABS: TabConfig[] = [
   { to: '/search', label: 'Search', icon: Search },
   { to: '/saved', label: 'Saved', icon: Heart },
   { to: '/map', label: 'Map', icon: MapIcon },
-  { to: '/contact', label: 'Contact', icon: Phone },
 ]
 
 export default function LiquidNavbar() {
@@ -38,8 +36,7 @@ export default function LiquidNavbar() {
     if (path.startsWith('/search') || path.startsWith('/browse') || path.startsWith('/property')) return 1
     if (path.startsWith('/saved')) return 2
     if (path.startsWith('/map')) return 3
-    if (path.startsWith('/contact')) return 4
-    return 0
+    return -1
   }, [location.pathname])
 
   const handleTabClick = useCallback(

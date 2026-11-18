@@ -200,6 +200,15 @@ function App() {
           </Link>
           <div className="appbar-actions">
             <button
+              className={`contact-trigger ${location.pathname.startsWith('/contact') ? 'is-active' : ''}`}
+              type="button"
+              aria-label="Contact"
+              title="Contact"
+              onClick={() => navigate('/contact')}
+            >
+              <Phone size={19} />
+            </button>
+            <button
               className="theme-trigger"
               type="button"
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -1360,6 +1369,7 @@ function Browse({ onPick }: { onPick: (category: string, value: string) => void 
 }
 
 function Contact({ onNotify }: { onNotify: (value: string) => void }) {
+  const navigate = useNavigate()
   const [first, setFirst] = useState('')
   const [last, setLast] = useState('')
   const [email, setEmail] = useState('')
@@ -1369,6 +1379,7 @@ function Contact({ onNotify }: { onNotify: (value: string) => void }) {
   const [errors, setErrors] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [success, setSuccess] = useState(false)
+
   function submit(event: React.FormEvent) {
     event.preventDefault()
     const validation = [!first && 'first', !last && 'last', !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && 'email', !message.trim() && 'message', !consent && 'consent'].filter(Boolean) as string[]
@@ -1377,9 +1388,31 @@ function Contact({ onNotify }: { onNotify: (value: string) => void }) {
     setSending(true)
     window.setTimeout(() => { setSending(false); setSuccess(true); onNotify('Your message is on its way!') }, 900)
   }
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
+
   return <div className="contact-screen">
+    <div className="contact-nav">
+      <button
+        type="button"
+        className="contact-back-btn"
+        onClick={handleBack}
+        aria-label="Back"
+      >
+        <ChevronLeft size={20} />
+        <span>Back</span>
+      </button>
+      <span className="contact-nav-title">CONTACT US</span>
+      <div className="contact-nav-spacer" aria-hidden="true" />
+    </div>
     <div className="contact-content">
-      <div className="office-section"><span className="welcome-kicker">COME SAY HELLO</span><h2>Our location</h2><div className="office-card"><div className="office-card-top"><img src={ucLogo} alt="United Country Real Estate" className="office-logo" /><div><strong>Arizona Life Homes and Land</strong><span>United Country Real Estate</span></div><span className="office-status"><i /> OPEN</span></div><div className="office-detail"><MapPin size={17} /><span>225 N. Frontage Rd., Suite 107<br />Pearce, AZ 85625</span></div><div className="office-detail"><Clock3 size={17} /><span>Monday – Friday<br />9:00 AM – 5:00 PM</span></div><div className="office-detail"><Users size={17} /><span>Broker: Richard (Rick) Frank</span></div><div className="office-contacts"><a href="tel:+15204033903"><Phone size={15} /> Call </a><a href="mailto:rick45ap@vtc.net"><Mail size={15} /> Email</a></div><a className="office-website" href="https://www.arizonahomesandlandsales.com" target="_blank" rel="noreferrer">Visit our website <ArrowRight size={14} /></a></div><div className="contact-map"><MapCanvas listings={[]} center={[31.9, -109.83]} zoom={13} showOffice /><div className="contact-map-label"><MapPin size={15} /> Pearce, Arizona</div></div><div className="broker-credit"><span>LOCAL HEART. COUNTRY ROOTS.</span><strong>Richard “Rick” Frank <i>·</i> Your Southern Arizona Broker</strong></div></div>
+      <div className="office-section"><span className="welcome-kicker">COME SAY HELLO</span><h2>Our location</h2><div className="office-card"><div className="office-card-top"><img src={ucLogo} alt="United Country Real Estate" className="office-logo" /><div><strong>Arizona Life Homes and Land</strong><span>United Country Real Estate</span></div><span className="office-status"><i /> OPEN</span></div><div className="office-detail"><MapPin size={17} /><span>225 N. Frontage Rd., Suite 107<br />Pearce, AZ 85625</span></div><div className="office-detail"><Clock3 size={17} /><span>Monday – Friday<br />9:00 AM – 5:00 PM</span></div><div className="office-detail"><Users size={17} /><span>Broker: Richard (Rick) Frank</span></div><div className="office-contacts"><a href="tel:+15204033903"><Phone size={15} /> Call </a><a href="mailto:rick45ap@vtc.net"><Mail size={15} /> Email</a></div><a className="office-website" href="https://www.arizonahomesandlandsales.com" target="_blank" rel="noreferrer">Visit our website <ArrowRight size={14} /></a></div><div className="contact-map"><MapCanvas listings={[]} center={[31.9, -109.83]} zoom={13} showOffice layer="street" /><div className="contact-map-label"><MapPin size={15} /> Pearce, Arizona</div></div><div className="broker-credit"><span>LOCAL HEART. COUNTRY ROOTS.</span><strong>Richard “Rick” Frank <i>·</i> Your Southern Arizona Broker</strong></div></div>
 
     
       {success ? <div className="success-card"><span className="success-check"><Check size={28} /></span><span className="welcome-kicker">MESSAGE RECEIVED</span><h2>Thanks for reaching out.</h2><p>Rick will be in touch soon. In the meantime, imagine what’s possible.</p><button className="primary-button" onClick={() => { setSuccess(false); setFirst(''); setLast(''); setEmail(''); setPhone(''); setMessage(''); setConsent(false) }}>Send another message</button></div> : <form className="contact-form" onSubmit={submit} noValidate><span className="welcome-kicker">TELL US WHAT YOU’RE LOOKING FOR</span><h2>We’d love to hear from you.</h2><div className="form-row"><FormField label="First name" required error={errors.includes('first')}><input required aria-invalid={errors.includes('first')} value={first} onChange={(event) => setFirst(event.target.value)} placeholder="Your first name" /></FormField><FormField label="Last name" required error={errors.includes('last')}><input required aria-invalid={errors.includes('last')} value={last} onChange={(event) => setLast(event.target.value)} placeholder="Your last name" /></FormField></div><FormField label="Email address" required error={errors.includes('email')}><input required aria-invalid={errors.includes('email')} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></FormField><FormField label="Phone number"><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="(520) 555-0123" /></FormField><FormField label="How can we help?" required error={errors.includes('message')}><textarea required aria-invalid={errors.includes('message')} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Tell us a little about the place you’re looking for…" rows={4} /></FormField><label className={`consent-box ${errors.includes('consent') ? 'invalid' : ''}`}><input required aria-invalid={errors.includes('consent')} type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>I agree to be contacted about my inquiry. Reply STOP to opt out. See our <Link to="/info">Terms of Service</Link> and <Link to="/info">Privacy Policy</Link>.</span></label>{errors.length > 0 && <p className="form-error" role="alert">Please complete the required fields and consent.</p>}<button className="send-button" type="submit" disabled={sending}>{sending ? <><span className="spinner" /> Sending…</> : <>Send message <Send size={16} /></>}</button></form>}
