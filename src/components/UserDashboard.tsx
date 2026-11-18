@@ -37,7 +37,6 @@ import {
 } from 'lucide-react'
 import {
   useAppStore,
-  type User,
   type UserPreferences,
   type PersonalizedAlert,
 } from '../store/useAppStore'
@@ -115,7 +114,6 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
   const savedIds = useAppStore((s) => s.savedIds)
   const removeSaved = useAppStore((s) => s.removeSaved)
   const setFilters = useAppStore((s) => s.setFilters)
-  const addNotification = useAppStore((s) => s.addNotification)
   const darkMode = useAppStore((s) => s.darkMode)
   const toggleDarkMode = useAppStore((s) => s.toggleDarkMode)
   const personalizedAlerts = useAppStore((s) => s.personalizedAlerts || [])
