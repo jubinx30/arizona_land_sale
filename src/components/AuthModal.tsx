@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
   Eye,
@@ -11,7 +12,6 @@ import {
   X,
 } from 'lucide-react'
 import { useAppStore, type User } from '../store/useAppStore'
-import UserProfileView from './UserProfileView'
 import ucLogo from '../assets/uc-logo.png'
 import './AuthModal.css'
 
@@ -30,6 +30,7 @@ const DEMO = {
 }
 
 export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
+  const navigate = useNavigate()
   const currentUser = useAppStore((state) => state.currentUser)
   const setCurrentUser = useAppStore((state) => state.setCurrentUser)
 
@@ -198,9 +199,48 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           </div>
         </div>
 
-        {/* If user is already logged in, show user profile view */}
+        {/* If user is already logged in, show clean dashboard card */}
         {currentUser ? (
-          <UserProfileView onClose={onClose} onSignOut={handleSignOut} />
+          <div className="auth-logged-in-summary">
+            <div className="auth-user-snapshot">
+              {currentUser.avatar ? (
+                <img src={currentUser.avatar} alt={currentUser.name} className="auth-avatar-img" />
+              ) : (
+                <div className="auth-avatar-fallback">
+                  {currentUser.name.slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <div className="auth-snapshot-text">
+                <strong>{currentUser.name}</strong>
+                <span>{currentUser.email}</span>
+                <span className="auth-role-tag">{currentUser.buyerType || 'Verified Client'}</span>
+              </div>
+            </div>
+
+            <p className="auth-dashboard-hint">
+              You are signed in. Your profile settings, search criteria, and saved properties are located on your User Dashboard.
+            </p>
+
+            <div className="auth-logged-in-actions">
+              <button
+                type="button"
+                className="auth-btn-primary"
+                onClick={() => {
+                  onClose()
+                  navigate('/dashboard')
+                }}
+              >
+                Go to User Dashboard <ArrowRight size={15} />
+              </button>
+              <button
+                type="button"
+                className="auth-btn-signout"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             {/* Header intro */}

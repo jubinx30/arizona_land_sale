@@ -7,6 +7,7 @@ import {
   House,
   Map as MapIcon,
   Search,
+  User,
 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import './LiquidNavbar.css'
@@ -22,6 +23,7 @@ const TABS: TabConfig[] = [
   { to: '/search', label: 'Search', icon: Search },
   { to: '/saved', label: 'Saved', icon: Heart },
   { to: '/map', label: 'Map', icon: MapIcon },
+  { to: '/dashboard', label: 'Profile', icon: User },
 ]
 
 export default function LiquidNavbar() {
@@ -36,6 +38,7 @@ export default function LiquidNavbar() {
     if (path.startsWith('/search') || path.startsWith('/browse') || path.startsWith('/property')) return 1
     if (path.startsWith('/saved')) return 2
     if (path.startsWith('/map')) return 3
+    if (path.startsWith('/dashboard') || path.startsWith('/profile')) return 4
     return -1
   }, [location.pathname])
 

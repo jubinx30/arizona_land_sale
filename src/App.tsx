@@ -16,6 +16,8 @@ import PropertyCard, { formatPrice } from './components/PropertyCard'
 import SlidableScroller from './components/SlidableScroller'
 import LiquidNavbar from './components/LiquidNavbar'
 import AuthModal from './components/AuthModal'
+import UserDashboard from './components/UserDashboard'
+import UserMenuDropdown from './components/UserMenuDropdown'
 import ucLogo from './assets/uc-logo.png'
 import { getFilteredProperties, initialFilters, propertyMatchesType, useAppStore } from './store/useAppStore'
 import type { AppNotification, Filters } from './store/useAppStore'
@@ -61,6 +63,8 @@ function App() {
   }, [])
   const currentUser = useAppStore((state) => state.currentUser)
   const [authOpen, setAuthOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const notifications = useAppStore((state) => state.notifications)
   const unreadCount = notifications.filter((notification) => !notification.read).length
   const [islandExpanded, setIslandExpanded] = useState(false)
@@ -125,7 +129,26 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'instant' })
     const mainEl = document.querySelector('.screen-main')
     if (mainEl) mainEl.scrollTop = 0
+    setProfileMenuOpen(false)
   }, [location.pathname])
+
+  useEffect(() => {
+    if (!profileMenuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setProfileMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [profileMenuOpen])
 
   useEffect(() => {
     if (darkMode) {
@@ -232,19 +255,82 @@ function App() {
               <Bell size={19} />
               {unreadCount > 0 && <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
             </button>
-            <button className="user-trigger" aria-label={currentUser ? `Account (${currentUser.name})` : 'Sign in or create account'} onClick={() => setAuthOpen(true)}>
-              {currentUser ? (
-                currentUser.avatar ? (
-                  <img src={currentUser.avatar} alt={currentUser.name} className="user-avatar-badge-img" />
+            <div className="user-menu-wrapper" ref={userMenuRef}>
+              <button
+                className={`user-trigger ${profileMenuOpen ? 'is-active' : ''}`}
+                aria-label={currentUser ? `Account menu (${currentUser.name})` : 'Sign in or account menu'}
+                aria-expanded={profileMenuOpen}
+                onClick={() => setProfileMenuOpen((prev) => !prev)}
+              >
+                {currentUser ? (
+                  currentUser.avatar ? (
+                    <img src={currentUser.avatar} alt={currentUser.name} className="user-avatar-badge-img" />
+                  ) : (
+                    <span className="user-avatar-badge">
+                      {currentUser.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )
                 ) : (
-                  <span className="user-avatar-badge">
-                    {currentUser.name.slice(0, 1).toUpperCase()}
-                  </span>
-                )
-              ) : (
-                <UserIcon size={19} />
-              )}
-            </button>
+                  <UserIcon size={19} />
+                )}
+              </button>
+              <AnimatePresence>
+                {profileMenuOpen && (
+                  <UserMenuDropdown
+                    currentUser={currentUser}
+                    savedCount={useAppStore.getState().savedIds.length}
+                    darkMode={darkMode}
+                    onClose={() => setProfileMenuOpen(false)}
+                    onNavigate={(path) => {
+                      setProfileMenuOpen(false)
+                      navigate(path)
+                    }}
+                    onOpenAuth={() => {
+                      setProfileMenuOpen(false)
+                      setAuthOpen(true)
+                    }}
+                    onToggleTheme={handleToggleTheme}
+                    onContactBroker={() => {
+                      setProfileMenuOpen(false)
+                      setInquiryOpen(true)
+                    }}
+                    onSignOut={() => {
+                      setProfileMenuOpen(false)
+                      useAppStore.getState().setCurrentUser(null)
+                      notify('Signed out successfully')
+                    }}
+                    onDemoSignIn={() => {
+                      setProfileMenuOpen(false)
+                      useAppStore.getState().setCurrentUser({
+                        name: 'Sarah Miller',
+                        email: 'sarah.miller@example.com',
+                        username: 'sarah_miller',
+                        phone: '(602) 555-0142',
+                        location: 'Tucson, AZ',
+                        buyerType: 'Land Buyer & Homesteader',
+                        bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.',
+                        memberSince: 'Nov 2024',
+                        preferences: {
+                          buyerType: 'Land Buyer & Homesteader',
+                          targetAcreage: '5 - 20 acres',
+                          budgetRange: '$100k - $250k',
+                          preferredCounties: ['Cochise County', 'Pima County'],
+                          preferredTypes: ['Desert Land', 'Country Homes'],
+                          mustHaves: ['Mountain views', 'Off-grid solar ready'],
+                          notifications: {
+                            priceDrops: true,
+                            newListings: true,
+                            tourReminders: true,
+                            marketReports: false,
+                          },
+                        },
+                      })
+                      notify('Welcome, Sarah Miller!')
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
         <main className="screen-main" key={location.pathname}>
@@ -255,6 +341,8 @@ function App() {
                 <Route path="/search" element={<Results search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} onNotify={notify} />} />
                 <Route path="/saved" element={<Saved onNotify={notify} />} />
                 <Route path="/map" element={<MapScreen />} />
+                <Route path="/dashboard" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
+                <Route path="/profile" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
                 <Route path="/contact" element={<Contact onNotify={notify} />} />
                 <Route path="/property/:id" element={<PropertyDetail onNotify={notify} onMessage={() => setInquiryOpen(true)} />} />
                 <Route path="/browse/:category" element={<Browse onPick={handleBrowsePick} />} />
@@ -1446,9 +1534,10 @@ function Info() {
 function PageHeader({ kicker, title, subtitle }: { kicker?: string; title: string; subtitle?: string }) { return <div className="page-header">{kicker && <span className="welcome-kicker">{kicker}</span>}<h1>{title}</h1><div className="heading-underline" />{subtitle && <p>{subtitle}</p>}</div> }
 
 function Drawer({ onClose, onDark, darkMode, onAuth }: { onClose: () => void; onDark: () => void; darkMode: boolean; onAuth: () => void }) {
+  const navigate = useNavigate()
   const currentUser = useAppStore((state) => state.currentUser)
-  const links = [{ label: 'Home', to: '/' }, { label: 'Buyers', to: '/browse/type' }, { label: 'Sellers', to: '/contact' }, { label: 'Meet Our Team', to: '/contact' }, { label: 'Recently Sold', to: '/search' }, { label: 'Contact Us', to: '/contact' }, { label: 'Privacy Statement', to: '/info' }, { label: 'Terms of Use', to: '/info' }]
-  return <div className="drawer-backdrop" onClick={onClose}><motion.aside className="side-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 280 }} onClick={(event) => event.stopPropagation()}><div className="drawer-top"><div className="drawer-logo"><img src={ucLogo} alt="United Country Real Estate" className="uc-mark" /><div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div></div><button className="round-close" onClick={onClose}><X size={18} /></button></div><div className="drawer-user-strip" onClick={() => { onAuth(); onClose() }}><div className="drawer-user-avatar">{currentUser ? (currentUser.avatar ? <img src={currentUser.avatar} alt={currentUser.name} className="drawer-avatar-img" /> : currentUser.name[0].toUpperCase()) : <UserIcon size={17} />}</div><div className="drawer-user-copy"><strong>{currentUser ? currentUser.name : 'Sign in / Create account'}</strong><small>{currentUser ? currentUser.email : 'Personalized places & alerts'}</small></div><ChevronRight size={16} /></div><span className="welcome-kicker drawer-kicker">EXPLORE ARIZONA LIFE</span><nav>{links.map((link, index) => <Link key={link.label} to={link.to} onClick={onClose}><span>{link.label}</span>{index < 4 && <ArrowRight size={15} />}</Link>)}</nav><div className="drawer-bottom"><button className="mode-toggle" onClick={onDark}><span>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</span><span className={`switch ${darkMode ? 'on' : ''}`}><i /></span></button><p>Arizona Life Homes and Land<br />A United Country Real Estate office</p><Link to="/info" onClick={onClose}>Legal & accessibility <ArrowRight size={14} /></Link></div></motion.aside></div>
+  const links = [{ label: 'Home', to: '/' }, { label: 'User Dashboard', to: '/dashboard' }, { label: 'Buyers', to: '/browse/type' }, { label: 'Sellers', to: '/contact' }, { label: 'Meet Our Team', to: '/contact' }, { label: 'Recently Sold', to: '/search' }, { label: 'Contact Us', to: '/contact' }, { label: 'Privacy Statement', to: '/info' }, { label: 'Terms of Use', to: '/info' }]
+  return <div className="drawer-backdrop" onClick={onClose}><motion.aside className="side-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 280 }} onClick={(event) => event.stopPropagation()}><div className="drawer-top"><div className="drawer-logo"><img src={ucLogo} alt="United Country Real Estate" className="uc-mark" /><div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div></div><button className="round-close" onClick={onClose}><X size={18} /></button></div><div className="drawer-user-strip" onClick={() => { if (currentUser) { navigate('/dashboard'); onClose(); } else { onAuth(); onClose(); } }}><div className="drawer-user-avatar">{currentUser ? (currentUser.avatar ? <img src={currentUser.avatar} alt={currentUser.name} className="drawer-avatar-img" /> : currentUser.name[0].toUpperCase()) : <UserIcon size={17} />}</div><div className="drawer-user-copy"><strong>{currentUser ? currentUser.name : 'Sign in / Create account'}</strong><small>{currentUser ? currentUser.email : 'Personalized places & alerts'}</small></div><ChevronRight size={16} /></div><span className="welcome-kicker drawer-kicker">EXPLORE ARIZONA LIFE</span><nav>{links.map((link, index) => <Link key={link.label} to={link.to} onClick={onClose}><span>{link.label}</span>{index < 4 && <ArrowRight size={15} />}</Link>)}</nav><div className="drawer-bottom"><button className="mode-toggle" onClick={onDark}><span>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</span><span className={`switch ${darkMode ? 'on' : ''}`}><i /></span></button><p>Arizona Life Homes and Land<br />A United Country Real Estate office</p><Link to="/info" onClick={onClose}>Legal & accessibility <ArrowRight size={14} /></Link></div></motion.aside></div>
 }
 
 function InquirySheet({ onClose, onSend }: { onClose: () => void; onSend: () => void }) {

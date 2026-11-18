@@ -1,0 +1,372 @@
+/* Invisible backdrop to capture outside clicks */
+.user-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: transparent;
+}
+
+/* User Menu Dropdown Card */
+.user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 254px;
+  max-width: calc(100vw - 24px);
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
+  box-shadow:
+    0 16px 38px rgba(15, 30, 40, 0.16),
+    0 4px 12px rgba(15, 30, 40, 0.06),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  transform-origin: top right;
+  user-select: none;
+}
+
+/* User Profile Header */
+.user-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+
+.user-menu-header:hover {
+  background: #f1f6f3;
+}
+
+.user-menu-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.user-menu-avatar-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--green, #1f7a54);
+}
+
+.user-menu-avatar-fallback {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1f7a54 0%, #15553a 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(31, 122, 84, 0.25);
+}
+
+.user-menu-avatar-fallback.guest {
+  background: #e2e8f0;
+  color: #64748b;
+  box-shadow: none;
+}
+
+.user-menu-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-menu-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2936;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.user-menu-email {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.user-menu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #1f7a54;
+  background: #e8f5ee;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-top: 4px;
+  width: fit-content;
+  letter-spacing: 0.3px;
+}
+
+/* Divider */
+.user-menu-divider {
+  height: 1px;
+  background: #eef2f5;
+  margin: 4px 6px;
+}
+
+/* Menu items group */
+.user-menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  color: #2b3a42;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  font-family: inherit;
+  outline: none;
+}
+
+.user-menu-item:hover {
+  background: #f1f6f3;
+  color: #0f5e3e;
+}
+
+.user-menu-item:active {
+  transform: scale(0.98);
+}
+
+.user-menu-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #64748b;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.user-menu-item:hover .user-menu-item-icon {
+  color: #0f5e3e;
+}
+
+.user-menu-item-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-menu-item-text strong,
+.user-menu-item-text span {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.user-menu-item-text small {
+  font-size: 10px;
+  color: #718096;
+  line-height: 1.2;
+}
+
+.user-menu-item--primary {
+  background: #f0f7f3;
+}
+
+.user-menu-item--primary .user-menu-item-icon {
+  color: #1f7a54;
+}
+
+.user-menu-item--primary:hover {
+  background: #e5f0ea;
+}
+
+.user-menu-item--danger {
+  color: #dc2626;
+}
+
+.user-menu-item--danger .user-menu-item-icon {
+  color: #dc2626;
+}
+
+.user-menu-item--danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.user-menu-badge-count {
+  font-size: 10px;
+  font-weight: 700;
+  background: #1f7a54;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+/* Guest header & actions */
+.user-menu-guest-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+.user-menu-guest-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 6px;
+}
+
+.user-menu-btn-signin {
+  width: 100%;
+  padding: 8px 12px;
+  background: #1f7a54;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.user-menu-btn-signin:hover {
+  background: #186344;
+}
+
+.user-menu-btn-demo {
+  width: 100%;
+  padding: 6px 10px;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px dashed #cbd5e1;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.user-menu-btn-demo:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+/* Dark Mode Styles */
+.dark-mode .user-menu-dropdown {
+  background: rgba(26, 38, 46, 0.95);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .user-menu-header:hover {
+  background: #24343d;
+}
+
+.dark-mode .user-menu-name {
+  color: #edf2f7;
+}
+
+.dark-mode .user-menu-email {
+  color: #94a3b8;
+}
+
+.dark-mode .user-menu-badge {
+  background: #1d392e;
+  color: #86efac;
+}
+
+.dark-mode .user-menu-divider {
+  background: #2b3b44;
+}
+
+.dark-mode .user-menu-item {
+  color: #dce6eb;
+}
+
+.dark-mode .user-menu-item:hover {
+  background: #24343d;
+  color: #86efac;
+}
+
+.dark-mode .user-menu-item-icon {
+  color: #94a3b8;
+}
+
+.dark-mode .user-menu-item:hover .user-menu-item-icon {
+  color: #86efac;
+}
+
+.dark-mode .user-menu-item-text small {
+  color: #8da1ad;
+}
+
+.dark-mode .user-menu-item--primary {
+  background: #1e332c;
+}
+
+.dark-mode .user-menu-item--primary .user-menu-item-icon {
+  color: #86efac;
+}
+
+.dark-mode .user-menu-item--primary:hover {
+  background: #254238;
+}
+
+.dark-mode .user-menu-item--danger {
+  color: #f87171;
+}
+
+.dark-mode .user-menu-item--danger .user-menu-item-icon {
+  color: #f87171;
+}
+
+.dark-mode .user-menu-item--danger:hover {
+  background: #392224;
+  color: #fca5a5;
+}
+
+.dark-mode .user-menu-btn-demo {
+  background: #1e2c34;
+  color: #cbd5e1;
+  border-color: #384d59;
+}
+
+.dark-mode .user-menu-btn-demo:hover {
+  background: #263842;
+  border-color: #4f6877;
+  color: #ffffff;
+}
