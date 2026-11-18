@@ -5,8 +5,8 @@ import {
   ArrowLeft,
   ArrowRight,
   BadgeCheck,
+  BadgeDollarSign,
   Building2,
-  Calendar,
   Camera,
   Check,
   CheckCircle2,
@@ -15,33 +15,25 @@ import {
   Compass,
   DollarSign,
   FileText,
-  HelpCircle,
-  Image as ImageIcon,
-  Info,
   LandPlot,
   Mail,
   MapPin,
   Phone,
   Plus,
-  PlusCircle,
   RefreshCw,
-  Send,
-  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Trash2,
   UploadCloud,
   UserCheck,
   Users,
-  X,
 } from 'lucide-react'
 import {
   useAppStore,
   type UserPropertyListing,
-  type ListingReviewStatus,
   type TeamApplication,
 } from '../store/useAppStore'
-import { categories, cities } from '../data/properties'
+import { categories } from '../data/properties'
 import './SellAndJoinView.css'
 
 interface SellAndJoinViewProps {
@@ -407,7 +399,7 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
             className={`sell-join-tab ${activeTab === 'list_property' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('list_property')}
           >
-            <PlusCircle size={15} />
+            <BadgeDollarSign size={15} />
             <span>List Property</span>
           </button>
 
@@ -1207,6 +1199,19 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
                   </div>
                 </div>
 
+                {currentUser ? (
+                  <div className="auth-account-badge">
+                    <span>Applying as <strong>{currentUser.name}</strong> ({currentUser.email})</span>
+                  </div>
+                ) : onAuthRequest ? (
+                  <div className="auth-account-prompt">
+                    <span>Already have an Arizona Life profile?</span>
+                    <button type="button" className="auth-inline-btn" onClick={onAuthRequest}>
+                      Sign in to auto-fill details
+                    </button>
+                  </div>
+                ) : null}
+
                 {appSubmittedSuccess ? (
                   <div className="application-success-box">
                     <CheckCircle2 size={42} className="success-check-icon" />
@@ -1395,6 +1400,34 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
                   </form>
                 )}
               </div>
+
+              {/* Submitted Applications History Tracker */}
+              {teamApplications.length > 0 && (
+                <div className="submitted-apps-card">
+                  <div className="submitted-apps-head">
+                    <BadgeCheck size={16} />
+                    <h4>Your Submitted Team Inquiries ({teamApplications.length})</h4>
+                  </div>
+                  <div className="submitted-apps-list">
+                    {teamApplications.map((app) => (
+                      <div key={app.id} className="submitted-app-item">
+                        <div className="app-item-top">
+                          <strong>{app.fullName}</strong>
+                          <span className="app-status-pill">{app.status.replace(/_/g, ' ')}</span>
+                        </div>
+                        <span className="app-item-role">
+                          Role: {app.roleInterest.replace(/_/g, ' ')} · {app.experienceYears} · {app.targetTerritory}
+                        </span>
+                        {app.brokerFeedback && (
+                          <div className="app-feedback-bubble">
+                            <small>Broker Note: {app.brokerFeedback}</small>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

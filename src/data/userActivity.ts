@@ -52,7 +52,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
     title: 'Desert Homestead with Views',
     meta: '20.1 acres · Pearce, AZ',
     price: 95000,
-    tourSchedule: 'Sat, Nov 22 · 10am – 2pm',
+    tourSchedule: 'Sat, Nov 22 · 10am',
     image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=85',
     ctaText: 'View listing',
     ctaLink: '/property/pearce-homestead',

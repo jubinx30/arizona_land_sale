@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import {
+  BadgeDollarSign,
   Heart,
   LayoutDashboard,
   LogOut,
@@ -138,6 +139,20 @@ export default function UserMenuDropdown({
                 type="button"
                 className="user-menu-item"
                 role="menuitem"
+                onClick={() => onNavigate('/sell')}
+              >
+                <span className="user-menu-item-icon">
+                  <BadgeDollarSign size={16} />
+                </span>
+                <span className="user-menu-item-text">
+                  <span>List Property & Join Team</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="user-menu-item"
+                role="menuitem"
                 onClick={() => onNavigate('/dashboard?tab=preferences')}
               >
                 <span className="user-menu-item-icon">
@@ -146,6 +161,21 @@ export default function UserMenuDropdown({
                 <span className="user-menu-item-text">
                   <strong>Preferences</strong>
                   <small>Acreage, budget & counties</small>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="user-menu-item"
+                role="menuitem"
+                onClick={() => onNavigate('/sell')}
+              >
+                <span className="user-menu-item-icon">
+                  <BadgeDollarSign size={16} />
+                </span>
+                <span className="user-menu-item-text">
+                  <strong>List Property & Join Team</strong>
+                  <small>Broker approval & careers</small>
                 </span>
               </button>
             </div>
@@ -255,6 +285,20 @@ export default function UserMenuDropdown({
                 {savedCount > 0 && (
                   <span className="user-menu-badge-count">{savedCount}</span>
                 )}
+              </button>
+
+              <button
+                type="button"
+                className="user-menu-item"
+                role="menuitem"
+                onClick={() => onNavigate('/sell')}
+              >
+                <span className="user-menu-item-icon">
+                  <BadgeDollarSign size={16} />
+                </span>
+                <span className="user-menu-item-text">
+                  <span>List Property & Join Team</span>
+                </span>
               </button>
 
               <button

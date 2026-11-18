@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Property } from '../data/properties'
+import { defaultScheduledTours, type ScheduledTour } from '../components/tours/tourUtils'
 
 export type UserPreferences = {
   buyerType?: string
@@ -181,6 +182,9 @@ type AppState = {
   notifications: AppNotification[]
   userPropertyListings: UserPropertyListing[]
   teamApplications: TeamApplication[]
+  scheduledTours: ScheduledTour[]
+  addScheduledTour: (tour: ScheduledTour) => void
+  cancelScheduledTour: (id: string) => void
   mapLayer: MapLayer
   setMapLayer: (mapLayer: MapLayer) => void
   toggleMapLayer: () => void
@@ -196,7 +200,7 @@ type AppState = {
   addRecentSearch: (search: string) => void
   markNotificationRead: (id: string) => void
   markAllNotificationsRead: () => void
-  addNotification: (notification: Omit<AppNotification, 'id'> & { id?: string }) => void
+  addNotification: (notification: Omit<AppNotification, 'id' | 'read'> & { id?: string; read?: boolean }) => void
   addUserPropertyListing: (listing: UserPropertyListing) => void
   updateUserPropertyListingStatus: (id: string, status: ListingReviewStatus, brokerNotes?: string, mlsNumber?: string) => void
   deleteUserPropertyListing: (id: string) => void
@@ -228,6 +232,13 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   notifications: initialNotifications,
   userPropertyListings: defaultUserPropertyListings,
   teamApplications: defaultTeamApplications,
+  scheduledTours: defaultScheduledTours,
+  addScheduledTour: (tour) => set((state) => ({
+    scheduledTours: [tour, ...(state.scheduledTours || [])],
+  })),
+  cancelScheduledTour: (id) => set((state) => ({
+    scheduledTours: (state.scheduledTours || []).filter((tour) => tour.id !== id),
+  })),
   mapLayer: 'street',
   setMapLayer: (mapLayer) => set({ mapLayer }),
   toggleMapLayer: () => set((state) => ({ mapLayer: state.mapLayer === 'satellite' ? 'street' : 'satellite' })),
@@ -297,7 +308,17 @@ export const useAppStore = create<AppState>()(persist((set) => ({
         : item
     ),
   })),
-}), { name: 'arizona-life-app' }))
+}), {
+  name: 'arizona-life-app',
+  merge: (persistedState, currentState) => {
+    const p = (persistedState as Partial<AppState>) || {}
+    return {
+      ...currentState,
+      ...p,
+      scheduledTours: p.scheduledTours && p.scheduledTours.length > 0 ? p.scheduledTours : defaultScheduledTours,
+    }
+  },
+}))
 
 export function propertyMatchesType(property: Property, type: string) {
   const t = type.toLowerCase()

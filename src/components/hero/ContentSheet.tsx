@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowDownUp, Search, SlidersHorizontal, X } from 'lucide-react'
-import StatStrip from './StatStrip'
 import ContinueCard from './ContinueCard'
 import { useAppStore } from '../../store/useAppStore'
 
@@ -74,8 +73,8 @@ export default function ContentSheet({
       {/* Visual grabber handle indicator (36x4px rounded) */}
       <div className="content-sheet-grabber" aria-hidden="true" />
 
-      {/* Change 5: Live personal stat strip */}
-      <StatStrip onNotify={onNotify} />
+      
+
 
       {/* Search bar with filter, featured buttons on right side and quick tags */}
       <div className="sheet-search-wrap">

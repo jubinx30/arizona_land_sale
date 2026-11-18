@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
+  BadgeDollarSign,
   Heart,
   House,
   Map as MapIcon,
@@ -19,6 +20,7 @@ interface TabConfig {
 
 const TABS: TabConfig[] = [
   { to: '/', label: 'Home', icon: House },
+  { to: '/sell', label: 'Sell', icon: BadgeDollarSign },
   { to: '/saved', label: 'Saved', icon: Heart },
   { to: '/map', label: 'Map', icon: MapIcon },
   { to: '/dashboard', label: 'Profile', icon: User },
@@ -33,9 +35,10 @@ export default function LiquidNavbar() {
   const activeIndex = useMemo(() => {
     const path = location.pathname
     if (path === '/') return 0
-    if (path.startsWith('/saved')) return 1
-    if (path.startsWith('/map')) return 2
-    if (path.startsWith('/dashboard') || path.startsWith('/profile')) return 3
+    if (path.startsWith('/sell') || path.startsWith('/list-property')) return 1
+    if (path.startsWith('/saved')) return 2
+    if (path.startsWith('/map')) return 3
+    if (path.startsWith('/dashboard') || path.startsWith('/profile')) return 4
     return -1
   }, [location.pathname])
 

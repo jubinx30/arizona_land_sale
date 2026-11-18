@@ -18,10 +18,12 @@ import LiquidNavbar from './components/LiquidNavbar'
 import AuthModal from './components/AuthModal'
 import UserDashboard from './components/UserDashboard'
 import UserMenuDropdown from './components/UserMenuDropdown'
+import SellAndJoinView from './components/SellAndJoinView'
 import ucLogo from './assets/uc-logo.png'
 import { getFilteredProperties, initialFilters, propertyMatchesType, useAppStore } from './store/useAppStore'
 import type { AppNotification, Filters } from './store/useAppStore'
 import { HeroCarousel, ContentSheet } from './components/hero'
+import { isDateToday, formatTourStartTime } from './components/tours/tourUtils'
 import { LAST_VIEWED_STORAGE_KEY } from './data/userActivity'
 import './App.css'
 const counties = ['Cochise', 'Pima', 'Graham', 'Santa Cruz']
@@ -127,6 +129,36 @@ function App() {
     window.setTimeout(() => setToast(''), 2600)
   }, [])
 
+  const scheduledTours = useAppStore((state) => state.scheduledTours || [])
+  const addNotification = useAppStore((state) => state.addNotification)
+
+  const todayTour = scheduledTours.find((t) => isDateToday(t.date))
+
+  // Notify user in notification center if there is any tour on the current day
+  useEffect(() => {
+    if (todayTour) {
+      const hasTodayNotif = notifications.some((n) => n.id.startsWith('tour-today-'))
+      if (!hasTodayNotif) {
+        addNotification({
+          id: `tour-today-${todayTour.id}`,
+          title: `Tour Today: ${todayTour.propertyTitle}`,
+          message: `Your ${todayTour.type.toLowerCase()} is scheduled today at ${formatTourStartTime(todayTour.time)} with Broker Rick Frank.`,
+          date: 'Today',
+          read: false,
+          propertyId: todayTour.propertyId,
+        })
+      }
+    }
+  }, [todayTour, notifications, addNotification])
+
+  // In-app toast alert notification when opening app if there is a tour today
+  useEffect(() => {
+    if (todayTour && !sessionStorage.getItem('az-tour-today-alerted')) {
+      sessionStorage.setItem('az-tour-today-alerted', 'true')
+      notify(`🗓️ Reminder: You have a tour scheduled today at ${formatTourStartTime(todayTour.time)}!`)
+    }
+  }, [todayTour, notify])
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
     const mainEl = document.querySelector('.screen-main')
@@ -191,8 +223,23 @@ function App() {
             >
               {islandExpanded && (
                 <div className="island-content">
-                  <span className="island-pill-title">🌵 Arizona Life</span>
-                  <span className="island-pill-sub">Pearce, AZ</span>
+                  {todayTour ? (
+                    <div
+                      style={{ cursor: 'pointer', textAlign: 'center' }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate('/contact')
+                      }}
+                    >
+                      <span className="island-pill-title">🗓️ Tour Today · {formatTourStartTime(todayTour.time)}</span>
+                      <span className="island-pill-sub">{todayTour.propertyTitle}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="island-pill-title">🌵 Arizona Life</span>
+                      <span className="island-pill-sub">Pearce, AZ</span>
+                    </>
+                  )}
                 </div>
               )}
               <div className="island-compact">
@@ -224,6 +271,7 @@ function App() {
             <div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div>
           </Link>
           <div className="appbar-actions">
+           
             <button
               className={`contact-trigger ${location.pathname.startsWith('/contact') ? 'is-active' : ''}`}
               type="button"
@@ -346,6 +394,9 @@ function App() {
                 <Route path="/dashboard" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
                 <Route path="/profile" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
                 <Route path="/contact" element={<Contact onNotify={notify} />} />
+                <Route path="/sell" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
+                <Route path="/list-property" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
+                <Route path="/join-team" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
                 <Route path="/property/:id" element={<PropertyDetail onNotify={notify} onMessage={() => setInquiryOpen(true)} />} />
                 <Route path="/browse/:category" element={<Browse onPick={handleBrowsePick} />} />
                 <Route path="/info" element={<Info />} />
@@ -1372,7 +1423,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
         <div className="detail-cta">
           <button className="cta-call" onClick={() => onNotify('Calling +1 (520) 403-3903…')}><Phone size={16} /> Call</button>
           <button className="cta-message" onClick={onMessage}><MessageCircle size={16} /> Message</button>
-          <button className="cta-showing" onClick={() => navigate('/contact')}><Calendar size={16} /> Schedule a meeting</button>
+          <button className="cta-showing" onClick={() => navigate('/contact')}><Calendar size={16} /> Schedule a tour</button>
         </div>
         <h2 className="detail-section-title">Explore the area</h2>
         <div className="detail-map" onClick={() => navigate('/map')}>

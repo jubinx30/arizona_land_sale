@@ -8,8 +8,8 @@
   right: 0;
   margin-left: auto;
   margin-right: auto;
-  width: 90%;
-  max-width: 356px;
+  width: 94%;
+  max-width: 382px;
   height: 58px;
   padding: 4px;
   display: flex;
@@ -33,7 +33,7 @@
     inset 2px 0 4px rgba(255, 255, 255, 0.45),
     inset -2px 0 4px rgba(255, 255, 255, 0.45),
     inset 0 0 14px rgba(255, 255, 255, 0.1);
-  z-index: 35;
+  z-index: 60;
   isolation: isolate;
   user-select: none;
   overflow: hidden;
@@ -146,10 +146,10 @@
 
 /* Text Label */
 .liquid-tab-item__label {
-  font-size: 9px;
+  font-size: 8.5px;
   line-height: 1;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   transition: color 0.2s ease, font-weight 0.2s ease;
 }
 

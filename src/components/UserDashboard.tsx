@@ -5,6 +5,7 @@ import {
   AlertCircle,
   ArrowRight,
   Bell,
+  Calendar,
   Camera,
   Check,
   CheckCircle2,
@@ -13,7 +14,6 @@ import {
   Download,
   ExternalLink,
   Heart,
-  LandPlot,
   LayoutDashboard,
   LogOut,
   Mail,
@@ -655,64 +655,7 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
         )}
       </AnimatePresence>
 
-      {/* Dashboard KPI Stats Strip */}
-      <div className="dashboard-stats-strip">
-        <button
-          type="button"
-          className="dashboard-stat-card"
-          onClick={() => handleTabChange('saved')}
-        >
-          <div className="dashboard-stat-icon-wrap is-heart">
-            <Heart size={16} />
-          </div>
-          <div className="dashboard-stat-data">
-            <strong>{savedIds.length}</strong>
-            <span>Saved Places</span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          className="dashboard-stat-card"
-          onClick={() => handleTabChange('preferences')}
-        >
-          <div className="dashboard-stat-icon-wrap is-land">
-            <LandPlot size={16} />
-          </div>
-          <div className="dashboard-stat-data">
-            <strong>{targetAcreage.replace(' acres', ' ac')}</strong>
-            <span>Target Acreage</span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          className="dashboard-stat-card"
-          onClick={() => handleTabChange('preferences')}
-        >
-          <div className="dashboard-stat-icon-wrap is-budget">
-            <Sliders size={16} />
-          </div>
-          <div className="dashboard-stat-data">
-            <strong>{budgetRange}</strong>
-            <span>Budget</span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          className="dashboard-stat-card"
-          onClick={() => handleTabChange('notifications')}
-        >
-          <div className="dashboard-stat-icon-wrap is-alerts">
-            <Bell size={16} />
-          </div>
-          <div className="dashboard-stat-data">
-            <strong>{notificationsList.filter((n) => !n.read).length}</strong>
-            <span>Alerts</span>
-          </div>
-        </button>
-      </div>
+     
 
       {/* Dashboard Tab Navigation Bar */}
       <div className="dashboard-tabs-bar" role="tablist">
@@ -907,6 +850,28 @@ export default function UserDashboard({ onNotify, onAuthRequest, onContactBroker
               <div className="action-tile-body">
                 <strong>Interactive Map</strong>
                 <span>Inspect boundaries &amp; terrain</span>
+              </div>
+              <ChevronRight size={16} className="action-arrow" />
+            </div>
+
+            <div
+              className="dashboard-action-tile"
+              onClick={() => navigate('/contact')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  navigate('/contact')
+                }
+              }}
+            >
+              <div className="action-tile-icon green">
+                <Calendar size={18} />
+              </div>
+              <div className="action-tile-body">
+                <strong>Schedule a Tour</strong>
+                <span>Contact Broker Rick Frank to schedule a showing</span>
               </div>
               <ChevronRight size={16} className="action-arrow" />
             </div>

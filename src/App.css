@@ -258,6 +258,55 @@
 .brand-copy strong { font-size: 11px; font-weight: 800; }
 .brand-copy span { font-size: 8px; letter-spacing: 1.55px; margin-top: 3px; }
 .appbar-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.appbar-sell-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 31px;
+  padding: 0 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--green, #1f7a54) 0%, var(--green-dark, #0f5e3e) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(31, 122, 84, 0.22);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.16s ease;
+  flex-shrink: 0;
+}
+.appbar-sell-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(31, 122, 84, 0.32);
+  filter: brightness(1.06);
+}
+.appbar-sell-btn:active {
+  transform: scale(0.96);
+}
+.appbar-sell-btn.is-active {
+  background: linear-gradient(135deg, #15573b 0%, #0d3826 100%);
+  box-shadow: 0 0 0 2px rgba(31, 122, 84, 0.3);
+}
+.dark-mode .appbar-sell-btn {
+  background: linear-gradient(135deg, #1f7a54 0%, #17543a 100%);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.dark-mode .appbar-sell-btn.is-active {
+  background: linear-gradient(135deg, #23684a 0%, #154530 100%);
+}
+@media (max-width: 360px) {
+  .appbar-sell-btn-label {
+    display: none;
+  }
+  .appbar-sell-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
+  }
+}
 .contact-trigger { width: 38px; height: 38px; position: relative; display: grid; place-items: center; border: 0; border-radius: 50%; color: var(--navy); background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.16s, transform 0.15s, color 0.18s; }
 .contact-trigger:hover { background: #f0f5f2; color: var(--green); }
 .contact-trigger:active { background: #e6efe9; transform: scale(0.94); }
@@ -961,7 +1010,7 @@ button.heading-search-btn {
 .results-grid .property-content h3 { font-size: 11px; }
 .results-grid .property-features { display: none; }
 .results-grid .property-location { font-size: 8px; }
-.results-map-wrap { height: 440px; margin: 0 13px; position: relative; overflow: hidden; border-radius: 15px; border: 1px solid #dce8df; isolation: isolate; }
+.results-map-wrap { height: 440px; margin: 0 13px; position: relative; overflow: hidden; border-radius: 15px; border: 1px solid #dce8df; isolation: isolate; z-index: 1; }
 .results-map-wrap > .leaflet-map { position: absolute; inset: 0; border-radius: 14px; }
 .results-map-wrap .map-preview { z-index: 500; }
 .leaflet-control-attribution { display: none; }
@@ -1082,7 +1131,7 @@ button.heading-search-btn {
 .map-screen-heading { height: 74px; flex: 0 0 auto; background: white; padding: 10px 19px; display: flex; justify-content: space-between; align-items: center; }
 .map-screen-heading h1 { margin: 3px 0 0; color: var(--navy); font: 600 19px 'Montserrat',sans-serif; }
 .round-control { width: 38px; height: 38px; border: 1px solid #e0e8e2; border-radius: 50%; color: var(--green); background: white; display: grid; place-items: center; }
-.map-canvas-wrap { flex: 1; min-height: 400px; position: relative; overflow: hidden; margin: 12px 14px; border-radius: 15px; border: 1px solid #dce8df; isolation: isolate; }
+.map-canvas-wrap { flex: 1; min-height: 400px; position: relative; overflow: hidden; margin: 12px 14px; border-radius: 15px; border: 1px solid #dce8df; isolation: isolate; z-index: 1; }
 .leaflet-map { height: 100%; width: 100%; min-height: 100%; z-index: 1; background: #e5ebdf; }
 .map-canvas-wrap > .leaflet-map { position: absolute; inset: 0; border-radius: 14px; }
 .price-marker-icon { background: transparent; border: 0; }
@@ -1196,7 +1245,7 @@ button.heading-search-btn {
 .detail-feature-list li > span { width: 17px; height: 17px; display: grid; place-items: center; background: #edf5ef; color: var(--green); border-radius: 50%; flex: 0 0 auto; }
 .detail-description { color: #6e7c81; font-size: 10px; line-height: 1.7; }
 .read-more { display: flex; align-items: center; gap: 3px; color: var(--green); font-size: 10px; border: 0; background: transparent; padding: 5px 0; font-weight: 700; }
-.detail-map { height: 155px; position: relative; border-radius: 10px; overflow: hidden; background: #e7ede2; }
+.detail-map { height: 155px; position: relative; border-radius: 10px; overflow: hidden; background: #e7ede2; isolation: isolate; z-index: 1; }
 .detail-map .leaflet-map { position: absolute; inset: 0; }
 .map-label { position: absolute; z-index: 500; left: 9px; bottom: 9px; display: flex; align-items: center; gap: 5px; border-radius: 5px; padding: 7px 9px; background: white; color: var(--navy); box-shadow: 0 2px 7px #2c3b4a1f; font-size: 8px; }
 .map-label svg:first-child { color: var(--green); }
@@ -2037,7 +2086,7 @@ button.heading-search-btn {
 .office-contacts { display: flex; gap: 8px; margin-top: 13px; }
 .office-contacts a { min-height: 35px; display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; border-radius: 6px; background: #f0f5f1; color: var(--green); text-decoration: none; font-size: 9px; font-weight: 700; }
 .office-website { min-height: 36px; margin-top: 5px; display: flex; align-items: center; justify-content: space-between; color: var(--green); text-decoration: none; font-size: 9px; font-weight: 700; }
-.contact-map { height: 145px; position: relative; overflow: hidden; border-radius: 9px; margin-top: 10px; }
+.contact-map { height: 145px; position: relative; overflow: hidden; border-radius: 9px; margin-top: 10px; isolation: isolate; z-index: 1; }
 .contact-map .leaflet-map { position: absolute; inset: 0; }
 .contact-map-label { position: absolute; z-index: 500; left: 9px; bottom: 9px; display: flex; align-items: center; gap: 6px; padding: 7px 9px; border-radius: 5px; color: var(--navy); background: white; box-shadow: 0 2px 8px #23394b24; font-size: 8px; }
 .contact-map-label svg:first-child { color: var(--green); }
