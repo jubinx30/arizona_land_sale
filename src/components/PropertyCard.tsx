@@ -26,9 +26,16 @@ export default function PropertyCard({ property, compact = false }: Props) {
   }
 
   return (
-    <article className={`property-card ${compact ? 'property-card--compact' : ''}`} onClick={() => navigate(`/property/${property.id}`)}>
+    <article
+      className={`property-card ${compact ? 'property-card--compact' : ''}`}
+      onClick={() => navigate(`/property/${property.id}`)}
+      tabIndex={0}
+      role="button"
+      aria-label={`View ${property.title}, ${property.type}, ${property.acres} acres`}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/property/${property.id}`) } }}
+    >
       <div className={`property-image ${imageFailed ? 'property-image--fallback' : ''}`}>
-        {!imageFailed ? <img className="property-photo" src={property.images[0]} alt="" draggable={false} onError={() => setImageFailed(true)} /> : <div className="image-fallback-copy"><ImageOff size={21} /><span>Image unavailable</span></div>}
+        {!imageFailed ? <img className="property-photo" src={property.images[0]} alt={property.title} draggable={false} onError={() => setImageFailed(true)} /> : <div className="image-fallback-copy"><ImageOff size={21} /><span>Image unavailable</span></div>}
         <div className="image-shade" />
         <span className="sale-ribbon">FOR SALE</span>
         <span className="image-category">{property.type === 'Land' ? 'Land for Sale' : `${property.type} Property`}</span>

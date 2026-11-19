@@ -142,6 +142,24 @@ function App() {
     const mainEl = document.querySelector('.screen-main')
     if (mainEl) mainEl.scrollTop = 0
     setProfileMenuOpen(false)
+    // WCAG 2.4.2: Update page title on navigation
+    const titleMap: Record<string, string> = {
+      '/': 'Arizona Life Homes and Land',
+      '/search': 'Search Properties — Arizona Life',
+      '/saved': 'Saved Places — Arizona Life',
+      '/map': 'Map Search — Arizona Life',
+      '/dashboard': 'User Dashboard — Arizona Life',
+      '/profile': 'Profile — Arizona Life',
+      '/contact': 'Contact Us — Arizona Life',
+      '/sell': 'List Property & Join Team — Arizona Life',
+      '/list-property': 'List Property — Arizona Life',
+      '/join-team': 'Join Our Team — Arizona Life',
+      '/info': 'Legal & Accessibility — Arizona Life',
+    }
+    const matched = Object.keys(titleMap).find((key) =>
+      key !== '/' ? location.pathname.startsWith(key) : location.pathname === '/'
+    )
+    document.title = matched ? titleMap[matched] : 'Arizona Life Homes and Land'
   }, [location.pathname])
 
   useEffect(() => {

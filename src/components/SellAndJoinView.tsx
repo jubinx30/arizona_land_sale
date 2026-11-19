@@ -333,7 +333,9 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
           <button
             type="button"
             role="tab"
+            id="tab-list-property"
             aria-selected={activeTab === 'list_property'}
+            aria-controls="panel-list-property"
             className={`sell-join-tab ${activeTab === 'list_property' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('list_property')}
           >
@@ -344,7 +346,9 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
           <button
             type="button"
             role="tab"
+            id="tab-submissions"
             aria-selected={activeTab === 'submissions'}
+            aria-controls="panel-submissions"
             className={`sell-join-tab ${activeTab === 'submissions' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('submissions')}
           >
@@ -356,7 +360,9 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
           <button
             type="button"
             role="tab"
+            id="tab-join-team"
             aria-selected={activeTab === 'join_team'}
+            aria-controls="panel-join-team"
             className={`sell-join-tab ${activeTab === 'join_team' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('join_team')}
           >
@@ -375,6 +381,10 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
           {activeTab === 'list_property' && (
             <motion.div
               key="tab-list-property"
+              id="panel-list-property"
+              role="tabpanel"
+              aria-labelledby="tab-list-property"
+              tabIndex={0}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -600,7 +610,11 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
                   {/* Dropzone button */}
                   <div
                     className={`photo-dropzone ${formErrors.includes('images') && images.length === 0 ? 'dropzone-error' : ''}`}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Upload property photos"
                     onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click() } }}
                   >
                     <div className="dropzone-icon-circle">
                       <UploadCloud size={28} />
@@ -790,6 +804,10 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
           {activeTab === 'submissions' && (
             <motion.div
               key="tab-submissions"
+              id="panel-submissions"
+              role="tabpanel"
+              aria-labelledby="tab-submissions"
+              tabIndex={0}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -1007,6 +1025,10 @@ export default function SellAndJoinView({ onNotify, onAuthRequest }: SellAndJoin
           {activeTab === 'join_team' && (
             <motion.div
               key="tab-join-team"
+              id="panel-join-team"
+              role="tabpanel"
+              aria-labelledby="tab-join-team"
+              tabIndex={0}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}

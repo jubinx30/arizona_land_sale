@@ -15,7 +15,7 @@
   --green-light: #eaf3ed;
   --navy: #2b3a4f;
   --steel: #9db4cc;
-  --muted: #78838b;
+  --muted: #5e6b74;
   --canvas: #f4f6f8;
   --line: #e6eaed;
   --radius: 12px;
@@ -43,6 +43,27 @@ button { cursor: pointer; }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid #6aa886; outline-offset: 2px; }
 a { color: inherit; }
 ::selection { color: #fff; background: var(--green); }
+
+/* Skip-navigation link (WCAG 2.4.1) */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 8px;
+  z-index: 9999;
+  background: var(--green);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: top 0.15s;
+}
+.skip-nav:focus {
+  top: 0;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

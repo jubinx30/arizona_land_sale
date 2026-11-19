@@ -84,8 +84,10 @@ export default function HeroCard({
     <article
       className={`hero-card-item ${isActive ? 'is-active' : ''} ${isNeighbor ? 'is-neighbor' : ''}`}
       onClick={handleCardClick}
-      aria-label={`${slide.title}. ${slide.meta}. Tap to view listing.`}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick() } }}
+      aria-label={`${slide.title}. ${slide.meta}. Press Enter to view listing.`}
       role="group"
+      tabIndex={isActive ? 0 : -1}
     >
       {/* Background Image */}
       <img
@@ -143,7 +145,7 @@ export default function HeroCard({
         </button>
       </div>
 
-      {shared && <div className="hero-share-toast">Link copied!</div>}
+      {shared && <div className="hero-share-toast" role="status" aria-live="polite">Link copied!</div>}
 
       {/* Bottom Frosted Glass Overlay Panel (Change 3) */}
       <GlassPanel>

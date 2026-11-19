@@ -76,7 +76,8 @@ export default function UserMenuDropdown({
               role="button"
               tabIndex={0}
               onClick={() => onNavigate('/dashboard')}
-              title="Open User Dashboard"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('/dashboard') } }}
+              aria-label="Open User Dashboard"
             >
               <div className="user-menu-avatar-wrap">
                 {currentUser.avatar ? (

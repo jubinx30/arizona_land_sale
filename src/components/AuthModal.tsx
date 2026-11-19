@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -45,6 +45,32 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [phone, setPhone] = useState(DEMO.phone)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  // WCAG 2.4.3: Move focus into modal on open, trap it, restore on close
+  useEffect(() => {
+    if (!isOpen) return
+    const modal = modalRef.current
+    if (!modal) return
+    const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    const focusableEls = Array.from(modal.querySelectorAll<HTMLElement>(focusableSelectors))
+    const firstEl = focusableEls[0]
+    const lastEl = focusableEls[focusableEls.length - 1]
+    firstEl?.focus()
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab') return
+      if (focusableEls.length === 0) { e.preventDefault(); return }
+      if (e.shiftKey) {
+        if (document.activeElement === firstEl) { e.preventDefault(); lastEl?.focus() }
+      } else {
+        if (document.activeElement === lastEl) { e.preventDefault(); firstEl?.focus() }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
@@ -174,7 +200,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   return (
     <div className="auth-modal-backdrop" onClick={onClose}>
       <motion.div
+        ref={modalRef}
         className={`auth-modal-card ${currentUser ? 'is-profile' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={currentUser ? 'Account profile' : mode === 'signin' ? 'Sign in' : 'Create account'}
         initial={{ opacity: 0, y: 36, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -297,6 +327,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               {error && (
                 <motion.div
                   className="auth-error-banner"
+                  role="alert"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
