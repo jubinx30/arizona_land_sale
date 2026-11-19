@@ -327,7 +327,7 @@ export const useAppStore = create<AppState>()(persist((set) => ({
   showBoundaries: true,
   setShowBoundaries: (showBoundaries) => set({ showBoundaries }),
   toggleBoundaries: () => set((state) => ({ showBoundaries: !state.showBoundaries })),
-  darkMode: typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-color-scheme: dark)')?.matches),
+  darkMode: false,
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
   setDarkMode: (darkMode) => set({ darkMode }),
   toggleSaved: (id) => set((state) => ({

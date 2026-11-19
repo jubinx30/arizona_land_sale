@@ -142,24 +142,6 @@ function App() {
     const mainEl = document.querySelector('.screen-main')
     if (mainEl) mainEl.scrollTop = 0
     setProfileMenuOpen(false)
-    // WCAG 2.4.2: Update page title on navigation
-    const titleMap: Record<string, string> = {
-      '/': 'Arizona Life Homes and Land',
-      '/search': 'Search Properties — Arizona Life',
-      '/saved': 'Saved Places — Arizona Life',
-      '/map': 'Map Search — Arizona Life',
-      '/dashboard': 'User Dashboard — Arizona Life',
-      '/profile': 'Profile — Arizona Life',
-      '/contact': 'Contact Us — Arizona Life',
-      '/sell': 'List Property & Join Team — Arizona Life',
-      '/list-property': 'List Property — Arizona Life',
-      '/join-team': 'Join Our Team — Arizona Life',
-      '/info': 'Legal & Accessibility — Arizona Life',
-    }
-    const matched = Object.keys(titleMap).find((key) =>
-      key !== '/' ? location.pathname.startsWith(key) : location.pathname === '/'
-    )
-    document.title = matched ? titleMap[matched] : 'Arizona Life Homes and Land'
   }, [location.pathname])
 
   useEffect(() => {
@@ -247,144 +229,144 @@ function App() {
           </div>
 
           <header className="appbar">
-          <Link className="brand-lockup" to="/" aria-label="Arizona Life Homes and Land home">
-            <img src={ucLogo} alt="United Country Real Estate" className="uc-mark" /><span>|</span>
-            <div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div>
-          </Link>
-          <div className="appbar-actions">
-           
-            <button
-              className={`contact-trigger ${location.pathname.startsWith('/contact') ? 'is-active' : ''}`}
-              type="button"
-              aria-label="Contact"
-              title="Contact"
-              onClick={() => navigate('/contact')}
-            >
-              <Phone size={19} />
-            </button>
-            <button className="notification-trigger" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`} onClick={() => setNotificationsOpen(true)}>
-              <Bell size={19} />
-              {unreadCount > 0 && <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
-            </button>
-            <div className="user-menu-wrapper" ref={userMenuRef}>
+            <Link className="brand-lockup" to="/" aria-label="Arizona Life Homes and Land home">
+              <img src={ucLogo} alt="United Country Real Estate" className="uc-mark" /><span>|</span>
+              <div className="brand-copy"><strong>ARIZONA LIFE</strong><span>HOMES & LAND</span></div>
+            </Link>
+            <div className="appbar-actions">
+
               <button
-                className={`user-trigger ${profileMenuOpen ? 'is-active' : ''}`}
-                aria-label={currentUser ? `Account menu (${currentUser.name})` : 'Sign in or account menu'}
-                aria-expanded={profileMenuOpen}
-                onClick={() => setProfileMenuOpen((prev) => !prev)}
+                className={`contact-trigger ${location.pathname.startsWith('/contact') ? 'is-active' : ''}`}
+                type="button"
+                aria-label="Contact"
+                title="Contact"
+                onClick={() => navigate('/contact')}
               >
-                {currentUser ? (
-                  currentUser.avatar ? (
-                    <img src={currentUser.avatar} alt={currentUser.name} className="user-avatar-badge-img" />
-                  ) : (
-                    <span className="user-avatar-badge">
-                      {currentUser.name.slice(0, 1).toUpperCase()}
-                    </span>
-                  )
-                ) : (
-                  <UserIcon size={19} />
-                )}
+                <Phone size={19} />
               </button>
-              <AnimatePresence>
-                {profileMenuOpen && (
-                  <UserMenuDropdown
-                    currentUser={currentUser}
-                    savedCount={useAppStore.getState().savedIds.length}
-                    darkMode={darkMode}
-                    onClose={() => setProfileMenuOpen(false)}
-                    onNavigate={(path) => {
-                      setProfileMenuOpen(false)
-                      navigate(path)
-                    }}
-                    onOpenAuth={() => {
-                      setProfileMenuOpen(false)
-                      setAuthOpen(true)
-                    }}
-                    onToggleTheme={handleToggleTheme}
-                    onContactBroker={() => {
-                      setProfileMenuOpen(false)
-                      setInquiryOpen(true)
-                    }}
-                    onSignOut={() => {
-                      setProfileMenuOpen(false)
-                      useAppStore.getState().setCurrentUser(null)
-                      notify('Signed out successfully')
-                    }}
-                    onDemoSignIn={() => {
-                      setProfileMenuOpen(false)
-                      useAppStore.getState().setCurrentUser({
-                        name: 'Sarah Miller',
-                        email: 'sarah.miller@example.com',
-                        username: 'sarah_miller',
-                        phone: '(602) 555-0142',
-                        location: 'Tucson, AZ',
-                        buyerType: 'Land Buyer & Homesteader',
-                        bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.',
-                        memberSince: 'Nov 2024',
-                        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300&q=80',
-                        preferences: {
+              <button className="notification-trigger" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`} onClick={() => setNotificationsOpen(true)}>
+                <Bell size={19} />
+                {unreadCount > 0 && <span className="notification-count">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+              </button>
+              <div className="user-menu-wrapper" ref={userMenuRef}>
+                <button
+                  className={`user-trigger ${profileMenuOpen ? 'is-active' : ''}`}
+                  aria-label={currentUser ? `Account menu (${currentUser.name})` : 'Sign in or account menu'}
+                  aria-expanded={profileMenuOpen}
+                  onClick={() => setProfileMenuOpen((prev) => !prev)}
+                >
+                  {currentUser ? (
+                    currentUser.avatar ? (
+                      <img src={currentUser.avatar} alt={currentUser.name} className="user-avatar-badge-img" />
+                    ) : (
+                      <span className="user-avatar-badge">
+                        {currentUser.name.slice(0, 1).toUpperCase()}
+                      </span>
+                    )
+                  ) : (
+                    <UserIcon size={19} />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {profileMenuOpen && (
+                    <UserMenuDropdown
+                      currentUser={currentUser}
+                      savedCount={useAppStore.getState().savedIds.length}
+                      darkMode={darkMode}
+                      onClose={() => setProfileMenuOpen(false)}
+                      onNavigate={(path) => {
+                        setProfileMenuOpen(false)
+                        navigate(path)
+                      }}
+                      onOpenAuth={() => {
+                        setProfileMenuOpen(false)
+                        setAuthOpen(true)
+                      }}
+                      onToggleTheme={handleToggleTheme}
+                      onContactBroker={() => {
+                        setProfileMenuOpen(false)
+                        setInquiryOpen(true)
+                      }}
+                      onSignOut={() => {
+                        setProfileMenuOpen(false)
+                        useAppStore.getState().setCurrentUser(null)
+                        notify('Signed out successfully')
+                      }}
+                      onDemoSignIn={() => {
+                        setProfileMenuOpen(false)
+                        useAppStore.getState().setCurrentUser({
+                          name: 'Sarah Miller',
+                          email: 'sarah.miller@example.com',
+                          username: 'sarah_miller',
+                          phone: '(602) 555-0142',
+                          location: 'Tucson, AZ',
                           buyerType: 'Land Buyer & Homesteader',
-                          targetAcreage: '5 - 20 acres',
-                          budgetRange: '$100k - $250k',
-                          preferredCounties: ['Cochise County', 'Pima County'],
-                          preferredTypes: ['Desert Land', 'Country Homes'],
-                          mustHaves: ['Mountain views', 'Off-grid solar ready'],
-                          notifications: {
-                            priceDrops: true,
-                            newListings: true,
-                            tourReminders: true,
-                            marketReports: false,
+                          bio: 'Searching for 10-40 acres in Cochise or Santa Cruz County with mountain views and water well potential.',
+                          memberSince: 'Nov 2024',
+                          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300&q=80',
+                          preferences: {
+                            buyerType: 'Land Buyer & Homesteader',
+                            targetAcreage: '5 - 20 acres',
+                            budgetRange: '$100k - $250k',
+                            preferredCounties: ['Cochise County', 'Pima County'],
+                            preferredTypes: ['Desert Land', 'Country Homes'],
+                            mustHaves: ['Mountain views', 'Off-grid solar ready'],
+                            notifications: {
+                              priceDrops: true,
+                              newListings: true,
+                              tourReminders: true,
+                              marketReports: false,
+                            },
                           },
-                        },
-                      })
-                      notify('Welcome, Sarah Miller!')
-                    }}
-                  />
-                )}
-              </AnimatePresence>
+                        })
+                        notify('Welcome, Sarah Miller!')
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-        </header>
-        <main className="screen-main" key={location.pathname}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div key={location.pathname} className="route-motion" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
-              <Routes>
-                <Route path="/" element={<Home onNotify={notify} search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
-                <Route path="/search" element={<Results search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} onNotify={notify} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
-                <Route path="/saved" element={<Saved onNotify={notify} />} />
-                <Route path="/map" element={<MapScreen />} />
-                <Route path="/dashboard" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
-                <Route path="/profile" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
-                <Route path="/contact" element={<Contact onNotify={notify} />} />
-                <Route path="/sell" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
-                <Route path="/list-property" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
-                <Route path="/join-team" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
-                <Route path="/property/:id" element={<PropertyDetail onNotify={notify} onMessage={() => setInquiryOpen(true)} />} />
-                <Route path="/browse/:category" element={<Browse onPick={handleBrowsePick} />} />
-                <Route path="/info" element={<Info />} />
-                <Route path="*" element={<Home onNotify={notify} search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
-              </Routes>
-            </motion.div>
-          </AnimatePresence>
-        </main>
-        <LiquidNavbar />
-        <div className="home-indicator"><span /></div>
-        <AnimatePresence>{drawer && <Drawer onClose={() => setDrawer(false)} onDark={handleToggleTheme} darkMode={darkMode} onAuth={() => setAuthOpen(true)} />}</AnimatePresence>
-        <AnimatePresence>{notificationsOpen && <NotificationSheet notifications={notifications} onClose={() => setNotificationsOpen(false)} onOpen={(notification) => {
-          useAppStore.getState().markNotificationRead(notification.id)
-          setNotificationsOpen(false)
-          if (notification.propertyId) navigate(`/property/${notification.propertyId}`)
-          else navigate('/search')
-        }} />}</AnimatePresence>
-        <AnimatePresence>{filtersOpen && <FilterSheet onClose={() => setFiltersOpen(false)} onApply={() => { setFiltersOpen(false); navigate('/search'); notify('Filters applied') }} />}</AnimatePresence>
-        <AnimatePresence>{sortOpen && <BottomSheet title="Sort properties" onClose={() => setSortOpen(false)}><div className="sort-options">{['Featured', 'Price: low to high', 'Price: high to low', 'Acreage', 'Newest'].map((option) => <button key={option} className={sort === option ? 'chosen' : ''} onClick={() => { setSort(option); setSortOpen(false); if (location.pathname !== '/search') navigate('/search'); }}>{option}{sort === option && <Check size={17} />}</button>)}</div></BottomSheet>}</AnimatePresence>
-        <AnimatePresence>{inquiryOpen && <InquirySheet onClose={() => setInquiryOpen(false)} onSend={() => { setInquiryOpen(false); notify('Thanks! Rick will be in touch shortly.') }} />}</AnimatePresence>
-        <AnimatePresence>{toast && <motion.div className="toast-message" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}><Check size={16} />{toast}</motion.div>}</AnimatePresence>
-        <AnimatePresence>{authOpen && <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={(user) => notify(`Welcome back, ${user.name}!`)} />}</AnimatePresence>
-        <AnimatePresence>{intro && <Onboarding onDone={() => { localStorage.setItem('az-intro-done', 'yes'); setIntro(false) }} />}</AnimatePresence>
+          </header>
+          <main className="screen-main" key={location.pathname}>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={location.pathname} className="route-motion" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
+                <Routes>
+                  <Route path="/" element={<Home onNotify={notify} search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
+                  <Route path="/search" element={<Results search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} onNotify={notify} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
+                  <Route path="/saved" element={<Saved onNotify={notify} />} />
+                  <Route path="/map" element={<MapScreen />} />
+                  <Route path="/dashboard" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
+                  <Route path="/profile" element={<UserDashboard onNotify={notify} onAuthRequest={() => setAuthOpen(true)} onContactBroker={() => setInquiryOpen(true)} />} />
+                  <Route path="/contact" element={<Contact onNotify={notify} />} />
+                  <Route path="/sell" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
+                  <Route path="/list-property" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
+                  <Route path="/join-team" element={<SellAndJoinView onNotify={notify} onAuthRequest={() => setAuthOpen(true)} />} />
+                  <Route path="/property/:id" element={<PropertyDetail onNotify={notify} onMessage={() => setInquiryOpen(true)} />} />
+                  <Route path="/browse/:category" element={<Browse onPick={handleBrowsePick} />} />
+                  <Route path="/info" element={<Info />} />
+                  <Route path="*" element={<Home onNotify={notify} search={search} onSearch={handleSearch} onFilters={() => setFiltersOpen(true)} sort={sort} onSortOpen={() => setSortOpen(true)} />} />
+                </Routes>
+              </motion.div>
+            </AnimatePresence>
+          </main>
+          <LiquidNavbar />
+          <div className="home-indicator"><span /></div>
+          <AnimatePresence>{drawer && <Drawer onClose={() => setDrawer(false)} onDark={handleToggleTheme} darkMode={darkMode} onAuth={() => setAuthOpen(true)} />}</AnimatePresence>
+          <AnimatePresence>{notificationsOpen && <NotificationSheet notifications={notifications} onClose={() => setNotificationsOpen(false)} onOpen={(notification) => {
+            useAppStore.getState().markNotificationRead(notification.id)
+            setNotificationsOpen(false)
+            if (notification.propertyId) navigate(`/property/${notification.propertyId}`)
+            else navigate('/search')
+          }} />}</AnimatePresence>
+          <AnimatePresence>{filtersOpen && <FilterSheet onClose={() => setFiltersOpen(false)} onApply={() => { setFiltersOpen(false); navigate('/search'); notify('Filters applied') }} />}</AnimatePresence>
+          <AnimatePresence>{sortOpen && <BottomSheet title="Sort properties" onClose={() => setSortOpen(false)}><div className="sort-options">{['Featured', 'Price: low to high', 'Price: high to low', 'Acreage', 'Newest'].map((option) => <button key={option} className={sort === option ? 'chosen' : ''} onClick={() => { setSort(option); setSortOpen(false); if (location.pathname !== '/search') navigate('/search'); }}>{option}{sort === option && <Check size={17} />}</button>)}</div></BottomSheet>}</AnimatePresence>
+          <AnimatePresence>{inquiryOpen && <InquirySheet onClose={() => setInquiryOpen(false)} onSend={() => { setInquiryOpen(false); notify('Thanks! Rick will be in touch shortly.') }} />}</AnimatePresence>
+          <AnimatePresence>{toast && <motion.div className="toast-message" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}><Check size={16} />{toast}</motion.div>}</AnimatePresence>
+          <AnimatePresence>{authOpen && <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={(user) => notify(`Welcome back, ${user.name}!`)} />}</AnimatePresence>
+          <AnimatePresence>{intro && <Onboarding onDone={() => { localStorage.setItem('az-intro-done', 'yes'); setIntro(false) }} />}</AnimatePresence>
+        </div>
       </div>
     </div>
-  </div>
   )
 }
 
@@ -472,7 +454,7 @@ function Home({
             <button onClick={() => navigate('/contact')}>Meet our local broker <ArrowRight size={15} /></button>
           </div>
         </section>
-       
+
         <section className="partner-section">
           <h3>Our trusted partners</h3>
           <div className="partner-marquee">
@@ -980,7 +962,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
     if (property?.id) {
       try {
         localStorage.setItem(LAST_VIEWED_STORAGE_KEY, property.id)
-      } catch (_) {}
+      } catch (_) { }
     }
   }, [property?.id])
   const [mediaTab, setMediaTab] = useState<'photos' | 'video'>('photos')
@@ -1081,7 +1063,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
         setIsVideoPlaying(true)
         setShowControls(true)
         scheduleControlsHide()
-      }).catch(() => {})
+      }).catch(() => { })
     } else {
       detailVideoRef.current.pause()
       setIsVideoPlaying(false)
@@ -1185,7 +1167,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
               detailVideoRef.current?.play().then(() => {
                 setIsVideoPlaying(true)
                 scheduleControlsHide()
-              }).catch(() => {})
+              }).catch(() => { })
             }, 100)
           }}
         >
@@ -1235,7 +1217,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
                 detailVideoRef.current?.play().then(() => {
                   setIsVideoPlaying(true)
                   scheduleControlsHide()
-                }).catch(() => {})
+                }).catch(() => { })
               }, 100)
             }}
           >
@@ -1270,7 +1252,6 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
           />
           <div className="video-overlay-gradient" />
           <div className="gallery-top">
-            <span className="sale-ribbon">4K AERIAL TOUR</span>
             <span className="video-duration-pill">{propertyVideo.duration}</span>
           </div>
           <button
@@ -1348,7 +1329,6 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
               </div>
 
               <div className="controls-group-right">
-                <span className="video-hd-chip">4K TOUR</span>
                 <button
                   className="video-action-icon-btn"
                   onClick={() => {
@@ -1373,7 +1353,7 @@ function PropertyDetail({ onNotify, onMessage }: { onNotify: (value: string) => 
         <div className="detail-address"><MapPin size={17} />{property.address}</div>
         <div className="detail-divider" />
 
-     
+
 
         <h2 className="detail-section-title">The details</h2>
         <div className="facts-grid"><Fact icon={<LandPlot />} label="Property size" value={`${property.acres} acres`} /><Fact icon={<Compass />} label="Property type" value={property.type} /><Fact icon={<MapPin />} label="County" value={`${property.county} County`} /><Fact icon={<Building2 />} label="Location" value={`${property.city}, AZ`} /></div>
@@ -1605,7 +1585,7 @@ function Contact({ onNotify }: { onNotify: (value: string) => void }) {
     <div className="contact-content">
       <div className="office-section"><span className="welcome-kicker">COME SAY HELLO</span><h2>Our location</h2><div className="office-card"><div className="office-card-top"><img src={ucLogo} alt="United Country Real Estate" className="office-logo" /><div><strong>Arizona Life Homes and Land</strong><span>United Country Real Estate</span></div><span className="office-status"><i /> OPEN</span></div><div className="office-detail"><MapPin size={17} /><span>225 N. Frontage Rd., Suite 107<br />Pearce, AZ 85625</span></div><div className="office-detail"><Clock3 size={17} /><span>Monday – Friday<br />9:00 AM – 5:00 PM</span></div><div className="office-detail"><Users size={17} /><span>Broker: Richard (Rick) Frank</span></div><div className="office-contacts"><a href="tel:+15204033903"><Phone size={15} /> Call </a><a href="mailto:rick45ap@vtc.net"><Mail size={15} /> Email</a></div><a className="office-website" href="https://www.arizonahomesandlandsales.com" target="_blank" rel="noreferrer">Visit our website <ArrowRight size={14} /></a></div><div className="contact-map"><MapCanvas listings={[]} center={[31.9, -109.83]} zoom={13} showOffice layer="street" /><div className="contact-map-label"><MapPin size={15} /> Pearce, Arizona</div></div><div className="broker-credit"><span>LOCAL HEART. COUNTRY ROOTS.</span><strong>Richard “Rick” Frank <i>·</i> Your Southern Arizona Broker</strong></div></div>
 
-    
+
       {success ? <div className="success-card"><span className="success-check"><Check size={28} /></span><span className="welcome-kicker">MESSAGE RECEIVED</span><h2>Thanks for reaching out.</h2><p>Rick will be in touch soon. In the meantime, imagine what’s possible.</p><button className="primary-button" onClick={() => { setSuccess(false); setFirst(''); setLast(''); setEmail(''); setPhone(''); setMessage(''); setConsent(false) }}>Send another message</button></div> : <form className="contact-form" onSubmit={submit} noValidate><span className="welcome-kicker">TELL US WHAT YOU’RE LOOKING FOR</span><h2>We’d love to hear from you.</h2><div className="form-row"><FormField label="First name" required error={errors.includes('first')}><input required aria-invalid={errors.includes('first')} value={first} onChange={(event) => setFirst(event.target.value)} placeholder="Your first name" /></FormField><FormField label="Last name" required error={errors.includes('last')}><input required aria-invalid={errors.includes('last')} value={last} onChange={(event) => setLast(event.target.value)} placeholder="Your last name" /></FormField></div><FormField label="Email address" required error={errors.includes('email')}><input required aria-invalid={errors.includes('email')} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></FormField><FormField label="Phone number"><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="(520) 555-0123" /></FormField><FormField label="How can we help?" required error={errors.includes('message')}><textarea required aria-invalid={errors.includes('message')} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Tell us a little about the place you’re looking for…" rows={4} /></FormField><label className={`consent-box ${errors.includes('consent') ? 'invalid' : ''}`}><input required aria-invalid={errors.includes('consent')} type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>I agree to be contacted about my inquiry. Reply STOP to opt out. See our <Link to="/info">Terms of Service</Link> and <Link to="/info">Privacy Policy</Link>.</span></label>{errors.length > 0 && <p className="form-error" role="alert">Please complete the required fields and consent.</p>}<button className="send-button" type="submit" disabled={sending}>{sending ? <><span className="spinner" /> Sending…</> : <>Send message <Send size={16} /></>}</button></form>}
     </div>
   </div>
